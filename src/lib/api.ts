@@ -11,7 +11,7 @@ import type { AuthResponse, EmailChangeDto, PasswordChangeDto, SocialLoginDto, U
 import type { ApiDashboardOverviewResponse, ApiRealtimeResponse, AudienceInsights, ContentPerformance, EngagementMetricsResponse, TrendData } from "~/types/analytics";
 
 // lib/api.ts
-const API_URL = 'http://localhost:8000/api';
+const API_URL = process.env.BACKEND_API_URL ?? 'http://localhost:8000/api';
 
 interface ApiError {
   message: string;
