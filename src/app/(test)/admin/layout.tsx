@@ -1,4 +1,3 @@
-// app/admin/layout.tsx
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -8,18 +7,15 @@ import {
   BookOpen,
   FileText,
   Users,
-  Settings,
   LogOut,
   Menu,
   X,
   BarChart3,
-  Upload,
   Home
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import type { User } from '~/types/user';
-import { api } from '~/lib/api';
 
 const navigation = [
   { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },

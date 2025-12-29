@@ -31,23 +31,6 @@ export function useAuth(): UseAuthReturn {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Load user on mount
-  useEffect(() => {
-    void checkAuth();
-    
-    // Listen for auth events
-    const handleAuthExpired = () => {
-      setUser(null);
-      setError('Session expired. Please login again.');
-    };
-    
-    window.addEventListener('auth-expired', handleAuthExpired);
-    
-    return () => {
-      window.removeEventListener('auth-expired', handleAuthExpired);
-    };
-  }, []);
-
   const checkAuth = useCallback(async () => {
     if (!api.isAuthenticated()) {
       setLoading(false);
@@ -72,6 +55,24 @@ export function useAuth(): UseAuthReturn {
       setLoading(false);
     }
   }, []);
+
+  // Load user on mount
+  useEffect(() => {
+    void checkAuth();
+    
+    // Listen for auth events
+    const handleAuthExpired = () => {
+      setUser(null);
+      setError('Session expired. Please login again.');
+    };
+    
+    window.addEventListener('auth-expired', handleAuthExpired);
+    
+    return () => {
+      window.removeEventListener('auth-expired', handleAuthExpired);
+    };
+  }, [checkAuth]);
+
 
   const login = useCallback(async (credentials: UserLoginDto) => {
     try {

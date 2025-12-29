@@ -138,13 +138,3 @@ export interface UserStats {
     unlockedAt: Date;
   }>;
 }
-
-export interface Notification {
-  id: string;
-  type: 'info' | 'success' | 'warning' | 'error' | 'new_content' | 'comment_reply' | 'like' | 'follow';
-  title: string;
-  message: string;
-  read: boolean;
-  data?: Record<string, any>;
-  createdAt: Date;
-}

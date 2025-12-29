@@ -1,21 +1,11 @@
 "use client"
 // import { headers } from "next/headers";
 import Link from "next/link";
-import { redirect } from "next/navigation";
-import { useState } from 'react';
-
-// import { auth } from "~/server/better-auth";
-// import { getSession } from "~/server/better-auth/server";
 import Image from "next/image";
-import TikTok from '../../public/tiktok.svg';
-import Threads from '../../public/threads.svg';
-
 import ComicCarousel from '../../components/carousel';
-import Footer from '../../components/footer';
 import { ArrowRight, BookOpen,  Globe, Heart, Play, Sparkles, Star, Users} from "lucide-react";
 
 export default function Home() {
-  // const session = await getSession();
 
   const featuredComics = [
     {
@@ -34,10 +24,10 @@ export default function Home() {
     },
     {
       id: 3,
-      title: "Sundiata",
-      description: "The epic of the King who founded the Mali Empire",
-      image: "https://velgg90lgs.ufs.sh/f/ymmBhW7qEDZC1LKjpK0Pvwy56lfshgk8Vpqr3K9ZYtuG2jzb",
-      rating: 4.7
+      title: "Swapped",
+      description: "Two friends wake up in each other\'s bodies—confused, panicked, and realizing someone wanted this to happen. Now they must survive each other\'s lives while uncovering who switched them… and why.",
+      image: "https://velgg90lgs.ufs.sh/f/ymmBhW7qEDZCpOpQBDaFjWu0eatESN5X6Am9bofsQqiVhzHC",
+      rating: 'Coming soon'
     }
   ];
 
@@ -161,18 +151,21 @@ export default function Home() {
             
             {/* Enhanced CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16">
-              <button className="group relative bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-10 py-5 rounded-2xl font-bold text-lg transition-all duration-500 transform hover:scale-105 hover:shadow-2xl flex items-center gap-3 overflow-hidden shadow-lg">
-                {/* Shine Effect */}
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -skew-x-12 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
-                <BookOpen className="w-6 h-6" />
-                Explore Our Library
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" />
-              </button>
-              
-              <button className="group relative border-2 border-purple-500 text-purple-600 hover:bg-purple-50 hover:border-purple-600 px-10 py-5 rounded-2xl font-bold text-lg transition-all duration-500 flex items-center gap-3 backdrop-blur-sm shadow-sm hover:shadow-md">
-                Learn More
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" />
-              </button>
+              <Link href={'/comics'}>
+                <button className="group relative bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-10 py-5 rounded-2xl font-bold text-lg transition-all duration-500 transform hover:scale-105 hover:shadow-2xl flex items-center gap-3 overflow-hidden shadow-lg">
+                  {/* Shine Effect */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -skew-x-12 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+                  <BookOpen className="w-6 h-6" />
+                  Explore Our Library
+                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" />
+                </button>
+              </Link>
+              <Link href={'/about'}>
+                <button className="group relative border-2 border-purple-500 text-purple-600 hover:bg-purple-50 hover:border-purple-600 px-10 py-5 rounded-2xl font-bold text-lg transition-all duration-500 flex items-center gap-3 backdrop-blur-sm shadow-sm hover:shadow-md">
+                  Learn More
+                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" />
+                </button>
+              </Link>
             </div>
           </div>
         </div>
@@ -240,18 +233,23 @@ export default function Home() {
                     </div>
                   )}
                   
-                  <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm text-slate-800 px-3 py-1 rounded-full text-sm font-semibold z-10 shadow-md border border-slate-200/50 flex items-center gap-1">
+                  {/* <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm text-slate-800 px-3 py-1 rounded-full text-sm font-semibold z-10 shadow-md border border-slate-200/50 flex items-center gap-1">
                     <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
                     {comic.rating}
-                  </div>
+                  </div> */}
 
                   <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-6">
                     {/* <button className="w-full bg-white/90 backdrop-blur-sm text-slate-800 py-3 rounded-lg font-semibold transition-all duration-300 transform translate-y-4 group-hover:translate-y-0 opacity-0 group-hover:opacity-100 hover:bg-white hover:scale-105">
                       Read Preview
                     </button> */}
-                    <button className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white py-3 rounded-lg font-semibold transition-all duration-300 transform shadow-md hover:shadow-lg translate-y-4 group-hover:translate-y-0 opacity-0 group-hover:opacity-100 hover:bg-white hover:scale-105">
-                    Read Preview
-                  </button>
+                    <Link href="/comics" className="w-full">
+                      <button 
+                        className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white py-3 rounded-lg font-semibold transition-all duration-300 transform shadow-md hover:shadow-lg translate-y-4 group-hover:translate-y-0 opacity-0 group-hover:opacity-100 hover:bg-white hover:scale-105"
+                        disabled={comic.rating === "Coming soon" ? true : false }
+                      >
+                        {comic.rating === "Coming soon" ? comic.rating+"!" : "Read Preview"}
+                      </button>
+                    </Link>
                   </div>
                 </div>
                 

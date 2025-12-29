@@ -1,4 +1,3 @@
-import type { StaticImport } from 'next/dist/shared/lib/get-img-props';
 import type { ComponentProps, DetailedHTMLProps, HTMLAttributes } from 'react';
 
 // Basic heading props

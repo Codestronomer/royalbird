@@ -12,6 +12,7 @@ import { useComicModal } from '~/hooks/useComicModal'
 import { api } from '~/lib/api'
 import type { ApiGenre, Comic } from '~/types/comics'
 import { transformComic } from '~/lib/utils'
+import toast from 'react-hot-toast';
 
 const sortOptions = [
   { label: 'Newest First', value: '-publishedAt' },
@@ -64,7 +65,7 @@ export default function ComicsPage() {
         if (response.pagination) setHasMore(currentPage < response.pagination.pages)
       }
     } catch (error) {
-      console.error('Failed to load comics:', error)
+      toast.error('Failed to load comics')
     } finally {
       setLoading(false)
       setLoadingMore(false)

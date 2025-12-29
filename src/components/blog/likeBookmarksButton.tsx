@@ -42,7 +42,7 @@ export default function LikeBookmarkButtons({
     let uid: string | null = localStorage.getItem('user_id');
 
     if (!uid) {
-      uid = uuidv4() as string;
+      uid = uuidv4();
       localStorage.setItem('user_id', uid);
     }
 
@@ -54,7 +54,7 @@ export default function LikeBookmarkButtons({
     
     let sessionId = sessionStorage.getItem('session_id');
     if (!sessionId) {
-      sessionId = uuidv4() as string;
+      sessionId = uuidv4();
       sessionStorage.setItem('session_id', sessionId);
     }
     return sessionId;

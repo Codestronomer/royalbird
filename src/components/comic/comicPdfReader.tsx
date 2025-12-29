@@ -59,7 +59,6 @@ const MIN_ZOOM = 0.5;
 const MAX_ZOOM = 3.0;
 const CONTROL_HIDE_DELAY = 3000;
 const TAP_ZONE_WIDTH = 0.33;
-const SCROLL_THRESHOLD = 100;
 
 export default function PdfComicReader({ 
   pdfUrl, 
@@ -87,11 +86,10 @@ export default function PdfComicReader({
   // Refs
   const containerRef = useRef<HTMLDivElement>(null);
   const viewerRef = useRef<HTMLDivElement>(null);
-  const controlTimeoutRef = useRef<NodeJS.Timeout>();
+  const controlTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const lastScrollPositionRef = useRef<number>(0);
-  const scrollDebounceRef = useRef<NodeJS.Timeout>();
+  const scrollDebounceRef = useRef<NodeJS.Timeout | null>(null);
   const isScrollingProgrammaticallyRef = useRef<boolean>(false);
-  const scrollCheckRef = useRef<number>(0);
   
   // Auto-hide controls with proper cleanup
   const resetControlTimeout = useCallback(() => {
@@ -178,13 +176,14 @@ export default function PdfComicReader({
       try {
         const saved = localStorage.getItem(`comic-${comic.id}-bookmarks`);
         if (saved) {
-          setBookmarks(JSON.parse(saved));
+          const parsedSaved = JSON.parse(saved) as number[];
+          setBookmarks(parsedSaved);
         }
         
         // Load saved progress
         const savedProgress = localStorage.getItem(`comic-${comic.id}-progress`);
         if (savedProgress) {
-          const progress: ProgressData = JSON.parse(savedProgress);
+          const progress = JSON.parse(savedProgress) as ProgressData;
           if (progress.page > 0 && progress.page <= numPages) {
             setCurrentPage(progress.page);
             setReadingTime(progress.readingTime ?? 0);
@@ -456,7 +455,7 @@ export default function PdfComicReader({
         case 'f':
         case 'F':
           e.preventDefault();
-          toggleFullscreen();
+          void toggleFullscreen();
           break;
         case 'b':
         case 'B':
@@ -479,7 +478,7 @@ export default function PdfComicReader({
           } else if (showSettings) {
             setShowSettings(false);
           } else if (isFullscreen) {
-            toggleFullscreen();
+            void toggleFullscreen();
           }
           break;
         case 'c':
