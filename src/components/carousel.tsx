@@ -75,7 +75,7 @@ export default function ComicCarousel() {
   const [isPlaying, setIsPlaying] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [touchStart, setTouchStart] = useState<number | null>(null);
-  
+  const containerRef = useRef<HTMLDivElement>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Auto-play logic
@@ -89,6 +89,14 @@ export default function ComicCarousel() {
       if (timerRef.current) clearInterval(timerRef.current);
     };
   }, [isPlaying, current]);
+
+  useEffect(() => {
+    const handleFsChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener('fullscreenchange', handleFsChange);
+    return () => document.removeEventListener('fullscreenchange', handleFsChange);
+  }, []);
 
   const next = () => setCurrent((prev) => (prev + 1) % comics.length);
   const prev = () => setCurrent((prev) => (prev - 1 + comics.length) % comics.length);
@@ -117,19 +125,24 @@ export default function ComicCarousel() {
     setTouchStart(null);
   };
 
-  const toggleFullscreen = () => {
-    if (!document.fullscreenElement) {
-      void document.documentElement.requestFullscreen();
-      setIsFullscreen(true);
-    } else {
-      void document.exitFullscreen();
-      setIsFullscreen(false);
+  const toggleFullscreen = async () => {
+    if (!containerRef.current) return;
+
+    try {
+      if (!document.fullscreenElement) {
+        await containerRef.current.requestFullscreen();
+      } else {
+        await document.exitFullscreen();
+      }
+    } catch {
+      console.error(`Error attempting to toggle full-screen mode`);
     }
   };
 
   return (
     <div className="relative w-full max-w-5xl mx-auto px-2 md:px-0">
-      <div 
+      <div
+        ref={containerRef}
         className="relative aspect-[2/3] md:w-full md:h-[600px] bg-gray-900 rounded-2xl overflow-hidden shadow-2xl touch-pan-y"
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
