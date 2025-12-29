@@ -1,49 +1,73 @@
 "use client"
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { ArrowLeft, Pause, Play, StepBack, ZoomIn } from 'lucide-react';
+import { ArrowLeft, Pause, Play, ZoomIn } from 'lucide-react';
 
 const comics = [
-  // {
-  //   "name": "Marvel Universe",
-  //   "key": "ymmBhW7qEDZCSES6AQ2TpkQoJyvDgn93mZwOBP6z7FRjVGil",
-  //   "customId": null,
-  //   "url": "https://velgg90lgs.ufs.sh/f/ymmBhW7qEDZCSES6AQ2TpkQoJyvDgn93mZwOBP6z7FRjVGil",
-  //   "size": 8408734,
-  //   "uploadedAt": "2025-11-16T01:26:34.000Z"
-  // },
   {
-    "name": "Spiderman: Into the spiderverse",
-    "key": "ymmBhW7qEDZCdPymIm9ZBMOJKN5y8Ur60CRajsfQiXIYHEzW",
+    "name": "Royal Bird Studios",
+    "key": "ymmBhW7qEDZCymb1j69qEDZC8Hw7eNgT4PLyuntVMO2khFcq",
     "customId": null,
-    "url": "https://velgg90lgs.ufs.sh/f/ymmBhW7qEDZCdPymIm9ZBMOJKN5y8Ur60CRajsfQiXIYHEzW",
-    "size": 3907446,
-    "uploadedAt": "2025-11-16T01:26:34.000Z"
-  },
-  {
-    "name": "Captain America: Cold war",
-    "key": "ymmBhW7qEDZCcpJPrgdPrB3EAfHZT7QdFGjt8zKieNam2I64",
-    "customId": null,
-    "url": "https://velgg90lgs.ufs.sh/f/ymmBhW7qEDZCcpJPrgdPrB3EAfHZT7QdFGjt8zKieNam2I64",
+    "url": "https://velgg90lgs.ufs.sh/f/ymmBhW7qEDZCirLamEpXG9cToa4EOsCnyL3BVWvR1M0ZUd7e",
     "size": 2739392,
     "uploadedAt": "2025-11-16T01:26:34.000Z"
   },
   {
-    "name": "Batman: Arkham knight",
-    "key": "ymmBhW7qEDZC6k4AGxIl7twzm8iK0vuXqofxMPFZjlkcDaAd",
+    "name": "Breach",
+    "key": "ymmBhW7qEDZCtvvxhMsTokwtWSCKHZy710dYzip9cuJgEVRa",
     "customId": null,
-    "url": "https://velgg90lgs.ufs.sh/f/ymmBhW7qEDZC6k4AGxIl7twzm8iK0vuXqofxMPFZjlkcDaAd",
-    "size": 1080028,
-    "uploadedAt": "2025-11-15T19:26:10.000Z"
+    "url": "https://velgg90lgs.ufs.sh/f/ymmBhW7qEDZCtvvxhMsTokwtWSCKHZy710dYzip9cuJgEVRa",
+    "size": 192719,
+    "uploadedAt": "2025-12-19T04:00:06.000Z"
   },
   {
-    "name": "Superman returns",
-    "key": "ymmBhW7qEDZClfgIC1Gpduc014aCIU9Zn5WhQOGosiJETqfK",
+    "name": "Breach Issue #1",
+    "key": "ymmBhW7qEDZCiL1TlNpXG9cToa4EOsCnyL3BVWvR1M0ZUd7e",
     "customId": null,
-    "url": "https://velgg90lgs.ufs.sh/f/ymmBhW7qEDZClfgIC1Gpduc014aCIU9Zn5WhQOGosiJETqfK",
-    "size": 76026,
-    "uploadedAt": "2025-11-15T19:26:05.000Z"
-  }
+    "url": "https://velgg90lgs.ufs.sh/f/ymmBhW7qEDZCiL1TlNpXG9cToa4EOsCnyL3BVWvR1M0ZUd7e",
+    "size": 8408734,
+    "uploadedAt": "2025-11-16T01:26:34.000Z"
+  },
+  {
+    "name": "IMG_6443.PNG",
+    "key": "ymmBhW7qEDZCvujmmuwnr6QhBCf01XYDbMTEa2JVi8HIeFyL",
+    "customId": null,
+    "url": "https://velgg90lgs.ufs.sh/f/ymmBhW7qEDZCvujmmuwnr6QhBCf01XYDbMTEa2JVi8HIeFyL",
+    "size": 11693993,
+    "uploadedAt": "2025-12-19T04:00:06.000Z"
+  },
+  {
+    "name": "IMG_6444.PNG",
+    "key": "ymmBhW7qEDZCNsk8BormyksCi7f4MLRxgTSruQ3hwIcJlj9V",
+    "customId": null,
+    "url": "https://velgg90lgs.ufs.sh/f/ymmBhW7qEDZCNsk8BormyksCi7f4MLRxgTSruQ3hwIcJlj9V",
+    "size": 15558907,
+    "uploadedAt": "2025-12-19T04:00:06.000Z"
+  },
+  {
+    "name": "Breach Issue #2",
+    "key": "ymmBhW7qEDZCSES6AQ2TpkQoJyvDgn93mZwOBP6z7FRjVGil",
+    "customId": null,
+    "url": "https://velgg90lgs.ufs.sh/f/ymmBhW7qEDZCk0hUKGVetT2M4N5FXZRKsny8JVLdw7rCjOS3",
+    "size": 8408734,
+    "uploadedAt": "2025-11-16T01:26:34.000Z"
+  },
+  {
+    "name": "IMG_6445.PNG",
+    "key": "ymmBhW7qEDZCOW7ejeydnSvhkqm0O9XUjIeaiTAs1W3LltbM",
+    "customId": null,
+    "url": "https://velgg90lgs.ufs.sh/f/ymmBhW7qEDZCOW7ejeydnSvhkqm0O9XUjIeaiTAs1W3LltbM",
+    "size": 12423945,
+    "uploadedAt": "2025-12-19T04:00:05.000Z"
+  },
+  {
+    "name": "IMG-20251120-WA0009.jpg",
+    "key": "ymmBhW7qEDZCt0wwZmsTokwtWSCKHZy710dYzip9cuJgEVRa",
+    "customId": null,
+    "url": "https://velgg90lgs.ufs.sh/f/ymmBhW7qEDZCt0wwZmsTokwtWSCKHZy710dYzip9cuJgEVRa",
+    "size": 631920,
+    "uploadedAt": "2025-12-19T04:00:05.000Z"
+  },
 ];
 
 export default function ComicCarousel() {
@@ -79,7 +103,7 @@ export default function ComicCarousel() {
   return (
     <div className="relative w-full max-w-5xl mx-auto group">
       {/* Main carousel container */}
-      <div className="relative h-[600px] bg-gray-100 rounded-xl overflow-hidden shadow-lg">
+      <div className="relative h-[600px] bg-gray-100 rounded-xl overflow-hidden shadow-2xl">
         <div className="relative w-full h-full">
           {comics.map((comic, index) => (
             <div

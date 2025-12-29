@@ -1,36 +1,6 @@
-import { Star, Users, Globe, Sparkles, BookOpen, Film, Heart, Target, Eye, MapPin, Phone, Mail, Send, ArrowRight, Quote, Zap, Palette, Rocket, Camera } from 'lucide-react';
+import { Star, Users, Globe, Sparkles, BookOpen, Film, Target, MapPin, Phone, Mail, Send, ArrowRight, Zap, Palette, Rocket } from 'lucide-react';
 
 export default function AboutPage() {
-  const teamMembers = [
-    {
-      name: "SANDRA GREEN",
-      role: "CREATIVE DIRECTOR",
-      bio: "Visionary architect of worlds. With years of shaping narratives that dance between ancient folklore and futuristic dreams.",
-      specialty: "World Building & Myth Crafting",
-      avatar: "/team/adeola.jpg"
-    },
-    {
-      name: "ANAKIN SKYWALKER",
-      role: "LEAD ILLUSTRATOR",
-      bio: "Master of visual symphony. Transforms whispers of tradition into thunderous visual poetry that leaps off the page.",
-      specialty: "Visual Storytelling & Character Design",
-      avatar: "/team/chike.jpg"
-    },
-    {
-      name: "JOHN DOE",
-      role: "HEAD WRITER",
-      bio: "Weaver of emotional tapestries. Breathes life into characters that feel more real than reality itself.",
-      specialty: "Character Development & Dialogue",
-      avatar: "/team/zara.jpg"
-    },
-    {
-      name: "JANE DOE",
-      role: "ANIMATION DIRECTOR",
-      bio: "Conductor of movement magic. Makes still images dance with the rhythm of African heartbeats.",
-      specialty: "Motion Design & Visual Effects",
-      avatar: "/team/kofi.jpg"
-    }
-  ];
 
   const values = [
     {
@@ -50,7 +20,7 @@ export default function AboutPage() {
     },
     {
       icon: <Rocket className="w-12 h-12" />,
-      title: "FUTURE ANCESTRY",
+      title: "ANCESTRY",
       description: "Honoring the past while building tomorrow. We're the bridge between ancient wisdom and future visions."
     }
   ];
@@ -63,14 +33,27 @@ export default function AboutPage() {
   ];
 
   return (
-    <main className="min-h-screen bg-white overflow-hidden">
+    <main className="min-h-screen bg-blue-50/40 overflow-hidden">
       {/* Hero Section - Full Screen Art Experience */}
       <section className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-900 via-purple-900 to-slate-900 overflow-hidden">
         {/* Animated Background Elements */}
         <div className="absolute inset-0">
+          {/* Background image */}
+          <div
+            className="absolute inset-0 bg-contain bg-center"
+            style={{
+              backgroundImage:
+                "url('https://velgg90lgs.ufs.sh/f/ymmBhW7qEDZCirLamEpXG9cToa4EOsCnyL3BVWvR1M0ZUd7e')",
+            }}
+          />
+
+          {/* Optional overlay for readability / mood */}
+          {/* Readability gradient */}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/40 to-black/80" />
+
+          {/* Subtle animated glow accents (optional, toned down) */}
           <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse" />
           <div className="absolute bottom-1/3 right-1/4 w-80 h-80 bg-purple-500/10 rounded-full blur-3xl animate-pulse delay-1000" />
-          <div className="absolute top-1/2 left-1/2 w-64 h-64 bg-pink-500/5 rounded-full blur-3xl animate-pulse delay-500" />
         </div>
 
         {/* Floating Comic Elements */}
@@ -85,30 +68,37 @@ export default function AboutPage() {
         </div>
 
         <div className="relative z-10 container mx-auto px-4 text-center">
-          <div className="max-w-6xl mx-auto">
+          <div className="max-w-6xl mx-auto flex flex-col gap-6">
             {/* Massive Main Title */}
-            <h1 className="text-5xl md:text-7xl lg:text-[9rem] font-black mb-8 leading-none">
-              <span className="bg-gradient-to-r from-blue-200 via-purple-200 to-pink-200 bg-clip-text text-transparent">
-                ROYALBIRD
+            <h1 className="text-3xl md:text-6xl lg:text-7xl font-black mb-6 leading-none opacity-80">
+              <span className="bg-gradient-to-r from-pink-400 via-purple-300 to-blue-400 bg-clip-text text-transparent">
+                Our story
               </span>
-              <br />
-              {/* <span className="bg-gradient-to-r from-white via-blue-100 to-purple-100 bg-clip-text text-transparent">
-                ROYALBIRD
-              </span> */}
             </h1>
             
             {/* Subtitle with Glow */}
-            <div className="relative inline-block mb-16">
-              <p className="text-2xl md:text-4xl text-white/80 font-light tracking-widest">
+            {/* <div className="relative inline-block mb-10">
+              <p className="text-3xl md:text-5xl text-white font-semibold tracking-widest">
                 Our Story
               </p>
               <div className="absolute -bottom-2 left-0 w-full h-1 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full blur-sm" />
-            </div>
+            </div> */}
 
             {/* Studio Tagline */}
-            <div className="max-w-4xl mx-auto">
-              <p className="text-xl md:text-2xl text-white/60 leading-relaxed font-light mb-12">
-                We&apos;re an animation and comic studio inspired by African storytelling. We craft universes that breathe, 
+            <div className="max-w-4xl mx-auto ">
+              <p
+                className="
+                  text-xl md:text-2xl
+                  text-slate-100
+                  font-light
+                  leading-relaxed
+                  drop-shadow-[0_6px_30px_rgba(0,0,0,0.25)]
+                "
+                style={{
+                  WebkitTextStroke: '0.6px rgba(0,0,0,0.25)',
+                }}
+              >
+                We&apos;re an animation and comic studio inspired by African storytelling. We craft universes that breathe,
                 characters that feel, and stories that ignite the soul. Welcome to the revolution of African storytelling.
               </p>
             </div>
@@ -123,13 +113,6 @@ export default function AboutPage() {
             </div>
           </div>
         </div>
-
-        {/* Scroll Indicator */}
-        {/* <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
-          <div className="w-8 h-14 border-2 border-white/30 rounded-full flex justify-center">
-            <div className="w-1 h-4 bg-white/50 rounded-full mt-3 animate-pulse" />
-          </div>
-        </div> */}
       </section>
 
       {/* Manifesto Section */}
@@ -239,59 +222,8 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Team Section */}
-      <section className="relative py-32 bg-white overflow-hidden">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-24">
-            <h2 className="text-4xl md:text-5xl font-black text-slate-900 mb-8">
-              MEET THE <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">DREAM TEAM</span>
-            </h2>
-            <p className="text-2xl text-slate-600 max-w-4xl mx-auto font-light">
-              The mad geniuses, visual poets, and story shamans who breathe life into our worlds
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 max-w-6xl mx-auto">
-            {teamMembers.map((member, index) => (
-              <div key={index} className="group relative">
-                <div className="absolute -inset-4 bg-gradient-to-r from-blue-600 to-purple-600 rounded-3xl opacity-0 group-hover:opacity-5 transition-opacity duration-500 blur-lg" />
-                <div className="relative bg-white rounded-2xl p-8 border-2 border-slate-100 group-hover:border-blue-200 transition-all duration-500 group-hover:shadow-2xl">
-                  <div className="flex flex-col lg:flex-row items-center lg:items-start gap-8">
-                    {/* Avatar */}
-                    <div className="relative">
-                      <div className="w-28 h-28 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-4xl font-black shadow-2xl">
-                        {member.name.charAt(0)}
-                      </div>
-                      <div className="absolute -inset-4 border-2 border-transparent rounded-full group-hover:border-blue-500/30 transition-all duration-500" />
-                    </div>
-                    
-                    {/* Content */}
-                    <div className="flex-1 text-center lg:text-left">
-                      <h3 className="text-2xl font-black text-slate-900 mb-2 tracking-tight">
-                        {member.name}
-                      </h3>
-                      <p className="text-blue-600 font-black text-lg mb-3 tracking-widest">
-                        {member.role}
-                      </p>
-                      <p className="text-slate-700 mb-4 leading-relaxed font-light">
-                        {member.bio}
-                      </p>
-                      <div className="inline-block bg-slate-100 rounded-full px-4 py-2">
-                        <span className="text-sm text-slate-600 font-semibold">
-                          {member.specialty}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* Contact Section */}
-      <section className="relative py-32 bg-gradient-to-br from-slate-900 via-purple-900 to-blue-900 overflow-hidden">
+      <section className="relative py-20 bg-gradient-to-br from-slate-900 via-purple-900 to-blue-900 overflow-hidden">
         {/* Background Elements */}
         <div className="absolute inset-0">
           <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl" />
@@ -382,8 +314,58 @@ export default function AboutPage() {
           </div>
         </div>
       </section>
-
-      {/* Footer would be included here */}
     </main>
   );
 }
+
+
+      {/* Team Section */}
+      {/* <section className="relative py-32 bg-white overflow-hidden">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-24">
+            <h2 className="text-4xl md:text-5xl font-black text-slate-900 mb-8">
+              MEET THE <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">DREAM TEAM</span>
+            </h2>
+            <p className="text-2xl text-slate-600 max-w-4xl mx-auto font-light">
+              The mad geniuses, visual poets, and story shamans who breathe life into our worlds
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 max-w-6xl mx-auto">
+            {teamMembers.map((member, index) => (
+              <div key={index} className="group relative">
+                <div className="absolute -inset-4 bg-gradient-to-r from-blue-600 to-purple-600 rounded-3xl opacity-0 group-hover:opacity-5 transition-opacity duration-500 blur-lg" />
+                <div className="relative bg-white rounded-2xl p-8 border-2 border-slate-100 group-hover:border-blue-200 transition-all duration-500 group-hover:shadow-2xl">
+                  <div className="flex flex-col lg:flex-row items-center lg:items-start gap-8">
+                    // Avatar 
+                    <div className="relative">
+                      <div className="w-28 h-28 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-4xl font-black shadow-2xl">
+                        {member.name.charAt(0)}
+                      </div>
+                      <div className="absolute -inset-4 border-2 border-transparent rounded-full group-hover:border-blue-500/30 transition-all duration-500" />
+                    </div>
+                    
+                   // Content
+                    <div className="flex-1 text-center lg:text-left">
+                      <h3 className="text-2xl font-black text-slate-900 mb-2 tracking-tight">
+                        {member.name}
+                      </h3>
+                      <p className="text-blue-600 font-black text-lg mb-3 tracking-widest">
+                        {member.role}
+                      </p>
+                      <p className="text-slate-700 mb-4 leading-relaxed font-light">
+                        {member.bio}
+                      </p>
+                      <div className="inline-block bg-slate-100 rounded-full px-4 py-2">
+                        <span className="text-sm text-slate-600 font-semibold">
+                          {member.specialty}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section> */}

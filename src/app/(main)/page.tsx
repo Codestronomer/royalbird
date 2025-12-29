@@ -27,16 +27,16 @@ export default function Home() {
     },
     {
       id: 2,
-      title: "Queen Amina",
-      description: "Warrior queen of Zazzau who built an empire and defended her people",
-      image: null,
+      title: "Breach (Issue #2)",
+      description: "Onari's journey continues into the Forsaken. still reluctant to join the fight, it is obvious something must be done to save the people.",
+      image: "https://globalcomix-comics-assets-files-desktop.nyc3.cdn.digitaloceanspaces.com/26717/7197930_8a65918365201842a63b8f1886bb639f.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=TRO77LWUBQ62LDGV44EB/20251212/us-east-1/s3/aws4_request&X-Amz-Date=20251212T011329Z&X-Amz-Expires=86430&X-Amz-SignedHeaders=host&X-Amz-Signature=58a819fd508c81b94f75b959380d8b2e83b556f86b574927b96d0ae9bb8f961e",
       rating: 4.9
     },
     {
       id: 3,
       title: "Sundiata",
-      description: "The epic of the Lion King who founded the Mali Empire",
-      image: null,
+      description: "The epic of the King who founded the Mali Empire",
+      image: "https://velgg90lgs.ufs.sh/f/ymmBhW7qEDZC1LKjpK0Pvwy56lfshgk8Vpqr3K9ZYtuG2jzb",
       rating: 4.7
     }
   ];
@@ -109,9 +109,9 @@ export default function Home() {
             <div className="relative mb-8">
               <h1 className="text-7xl md:text-9xl font-black tracking-tight mb-4">
                 <span className="bg-gradient-to-r from-gray-800 via-purple-700 to-pink-600 bg-clip-text text-transparent relative">
-                  Royalbird
+                  ROYALBIRD
                   <div className="absolute inset-0 bg-gradient-to-r from-gray-800 via-purple-700 to-pink-600 bg-clip-text text-transparent blur-sm opacity-15 -z-10">
-                    Royalbird
+                    ROYALBIRD
                   </div>
                 </span>
               </h1>
@@ -132,7 +132,12 @@ export default function Home() {
                     <span className="relative z-10 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent font-bold">
                       legends
                     </span>
-                    <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500/30 to-purple-500/30 rounded-full transform -rotate-1" />
+                    <span
+                      className="absolute bottom-0 left-0 w-full h-1
+                                bg-gradient-to-r from-blue-500/30 to-purple-500/30
+                                rounded-full transform -rotate-1"
+                      aria-hidden="true"
+                    />
                   </span>{" "}
                   come to life
                 </p>
@@ -241,9 +246,12 @@ export default function Home() {
                   </div>
 
                   <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-6">
-                    <button className="w-full bg-white/90 backdrop-blur-sm text-slate-800 py-3 rounded-lg font-semibold transition-all duration-300 transform translate-y-4 group-hover:translate-y-0 opacity-0 group-hover:opacity-100 hover:bg-white hover:scale-105">
+                    {/* <button className="w-full bg-white/90 backdrop-blur-sm text-slate-800 py-3 rounded-lg font-semibold transition-all duration-300 transform translate-y-4 group-hover:translate-y-0 opacity-0 group-hover:opacity-100 hover:bg-white hover:scale-105">
                       Read Preview
-                    </button>
+                    </button> */}
+                    <button className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white py-3 rounded-lg font-semibold transition-all duration-300 transform shadow-md hover:shadow-lg translate-y-4 group-hover:translate-y-0 opacity-0 group-hover:opacity-100 hover:bg-white hover:scale-105">
+                    Read Preview
+                  </button>
                   </div>
                 </div>
                 
@@ -260,19 +268,21 @@ export default function Home() {
                   <p className="text-slate-600 mb-4 leading-relaxed group-hover:text-slate-700 transition-colors duration-300">
                     {comic.description}
                   </p>
-                  <button className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white py-3 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg">
+                  {/* <button className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white py-3 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg">
                     Read Preview
-                  </button>
+                  </button> */}
                 </div>
               </div>
             ))}
           </div>
 
           <div className="text-center mt-12">
-            <button className="group border-2 border-blue-500 text-blue-600 hover:bg-blue-50 px-8 py-4 rounded-2xl font-bold text-lg transition-all duration-500 flex items-center gap-3 mx-auto backdrop-blur-sm hover:shadow-lg">
-              View All Comics
-              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" />
-            </button>
+            <Link href="/comics">
+              <button className="group border-2 border-blue-500 text-blue-600 hover:bg-blue-50 px-8 py-4 rounded-2xl font-bold text-lg transition-all duration-500 flex items-center gap-3 mx-auto backdrop-blur-sm hover:shadow-lg">
+                View All Comics
+                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" />
+              </button>
+            </Link>
           </div>
         </div>
       </section>

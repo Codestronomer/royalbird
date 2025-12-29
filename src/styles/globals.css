@@ -176,3 +176,207 @@
 .animate-fade-in-up {
   animation: fade-in-up 0.8s ease-out;
 }
+
+/* app/globals.css */
+@keyframes slide-in-from-bottom {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-in {
+  animation: slide-in-from-bottom 0.6s ease-out;
+}
+
+/* Prevent background scroll when modal is open */
+body.modal-open {
+  overflow: hidden;
+}
+
+/* ============================================================================
+   COMIC READER STYLES
+   ============================================================================ */
+
+/* Swiper Customization */
+.swiper-button-next,
+.swiper-button-prev {
+  width: 48px !important;
+  height: 48px !important;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(10px);
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.swiper-button-next:hover,
+.swiper-button-prev:hover {
+  background: rgba(0, 0, 0, 0.9);
+  transform: scale(1.1);
+}
+
+.swiper-button-next:after,
+.swiper-button-prev:after {
+  font-size: 20px !important;
+  font-weight: bold;
+}
+
+/* Sepia filter for reading mode */
+.sepia {
+  filter: sepia(0.4) contrast(1.1) brightness(1.1);
+}
+
+/* Smooth page transitions */
+.comic-page-transition {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Reading progress glow effect */
+.reading-progress-glow {
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+}
+
+/* Animated page turn effect */
+@keyframes page-turn {
+  0% {
+    transform: rotateY(0);
+  }
+  100% {
+    transform: rotateY(-180deg);
+  }
+}
+
+.page-turn-animation {
+  animation: page-turn 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-style: preserve-3d;
+}
+
+/* Loading shimmer animation */
+.loading-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.1) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Custom scrollbar for thumbnails panel */
+.thumbnails-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+}
+
+.thumbnails-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.thumbnails-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.thumbnails-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.3);
+  border-radius: 3px;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.8s ease-out forwards;
+  opacity: 0;
+}
+
+@keyframes pulse-slow {
+  0%, 100% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(1.02);
+  }
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 3s ease-in-out infinite;
+}
+
+.w-md-editor-toolbar button {
+  color: #4b5563; /* text-gray-600 */
+  transition: all 0.2s;
+}
+
+.w-md-editor-toolbar button:hover {
+  color: #2563eb; /* text-blue-600 */
+  background-color: #eff6ff; /* bg-blue-50 */
+}
+
+/* Ensure icons are centered */
+.w-md-editor-toolbar svg {
+  display: inline-block;
+  margin: 0 auto;
+}
+
+.w-md-editor-toolbar ul li button {
+  height: auto !important;
+  width: auto !important;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  border: none !important;
+  background: none !important;
+}
+
+/* Remove the default hover background to let Tailwind handle it */
+.w-md-editor-toolbar ul li button:hover {
+  background: transparent !important;
+}
+
+/* Optional: Add spacing between buttons like your map had */
+.w-md-editor-toolbar ul {
+  display: flex;
+  gap: 0.5rem; /* Equivalent to gap-2 */
+  padding: 0.75rem; /* Equivalent to p-3 */
+  background-color: #f9fafb; /* Equivalent to bg-gray-50 */
+  border-radius: 0.5rem; /* Equivalent to rounded-lg */
+}
