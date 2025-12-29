@@ -1,4 +1,5 @@
 import { Star, Users, Globe, Sparkles, BookOpen, Film, Target, MapPin, Phone, Mail, Send, ArrowRight, Zap, Palette, Rocket } from 'lucide-react';
+import Link from 'next/link';
 
 export default function AboutPage() {
 
@@ -35,12 +36,12 @@ export default function AboutPage() {
   return (
     <main className="min-h-screen bg-blue-50/40 overflow-hidden">
       {/* Hero Section - Full Screen Art Experience */}
-      <section className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-900 via-purple-900 to-slate-900 overflow-hidden">
+      <section className="relative h-[500px] md:min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-900 via-purple-900 to-slate-900 overflow-hidden">
         {/* Animated Background Elements */}
         <div className="absolute inset-0">
           {/* Background image */}
           <div
-            className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+            className="absolute inset-0 bg-cover bg-right md:bg-center bg-no-repeat"
             style={{
               backgroundImage:
                 "url('https://velgg90lgs.ufs.sh/f/ymmBhW7qEDZCirLamEpXG9cToa4EOsCnyL3BVWvR1M0ZUd7e')",
@@ -75,14 +76,6 @@ export default function AboutPage() {
                 Our story
               </span>
             </h1>
-            
-            {/* Subtitle with Glow */}
-            {/* <div className="relative inline-block mb-10">
-              <p className="text-3xl md:text-5xl text-white font-semibold tracking-widest">
-                Our Story
-              </p>
-              <div className="absolute -bottom-2 left-0 w-full h-1 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full blur-sm" />
-            </div> */}
 
             {/* Studio Tagline */}
             <div className="max-w-4xl mx-auto ">
@@ -105,11 +98,13 @@ export default function AboutPage() {
 
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
-              <button className="group relative bg-white/10 backdrop-blur-md border-2 border-white/20 hover:border-white/40 text-white px-12 py-6 rounded-full font-bold text-xl transition-all duration-500 transform hover:scale-110 hover:shadow-2xl flex items-center gap-4">
-                <Zap className="w-6 h-6 group-hover:rotate-12 transition-transform" />
-                EXPLORE OUR WORLDS
-                <ArrowRight className="w-6 h-6 group-hover:translate-x-2 transition-transform" />
-              </button>
+              <Link href="/comics">
+                <button className="group relative bg-white/10 backdrop-blur-md border-2 border-white/20 hover:border-white/40 text-white px-12 py-6 rounded-full font-bold text-xl transition-all duration-500 transform hover:scale-110 hover:shadow-2xl flex items-center gap-4">
+                  <Zap className="w-6 h-6 group-hover:rotate-12 transition-transform" />
+                  EXPLORE OUR WORLDS
+                  <ArrowRight className="w-6 h-6 group-hover:translate-x-2 transition-transform" />
+                </button>
+              </Link>
             </div>
           </div>
         </div>
@@ -137,7 +132,7 @@ export default function AboutPage() {
               {/* Vision Card */}
               <div className="group relative">
                 <div className="absolute -inset-4 bg-gradient-to-r from-blue-600 to-purple-600 rounded-3xl opacity-0 group-hover:opacity-10 transition-opacity duration-500 blur-xl" />
-                <div className="relative h-[380px] bg-white rounded-2xl p-12 border-2 border-slate-100 hover:border-blue-200 transition-all duration-500 group-hover:shadow-2xl">
+                <div className="relative h-[390px] bg-white rounded-2xl p-12 border-2 border-slate-100 hover:border-blue-200 transition-all duration-500 group-hover:shadow-2xl">
                   <div className="text-6xl mb-6">👁️</div>
                   <h3 className="text-4xl font-black text-slate-900 mb-5">
                     VISION
@@ -151,12 +146,12 @@ export default function AboutPage() {
               {/* Mission Card */}
               <div className="group relative">
                 <div className="absolute -inset-4 bg-gradient-to-r from-purple-600 to-pink-600 rounded-3xl opacity-0 group-hover:opacity-10 transition-opacity duration-500 blur-xl" />
-                <div className="relative h-[380px] bg-white rounded-2xl p-12 border-2 border-slate-100 hover:border-purple-200 transition-all duration-500 group-hover:shadow-2xl">
+                <div className="relative h-[400px] md:h-[390px] bg-white rounded-2xl p-12 border-2 border-slate-100 hover:border-purple-200 transition-all duration-500 group-hover:shadow-2xl">
                   <div className="text-6xl mb-6">🎯</div>
                   <h3 className="text-4xl font-black text-slate-900 mb-5">
                     MISSION
                   </h3>
-                  <p className="text-xl text-slate-700 leading-relaxed font-light">
+                  <p className="text-xl text-slate-700 leading-relaxed font-light pb-3">
                     We forge <span className="font-black text-purple-600">captivating comic volumes and animated films</span> that resonate with every generation, sparking insatiable curiosity and expanding the very boundaries of imagination.
                   </p>
                 </div>
@@ -204,7 +199,7 @@ export default function AboutPage() {
             {values.map((value, index) => (
               <div key={index} className="group text-center lg:text-left">
                 <div className="flex flex-col lg:flex-row items-center lg:items-start gap-8">
-                  <div className="w-22 h-22 bg-gradient-to-br from-blue-500 to-purple-600 rounded-3xl flex items-center justify-center text-white group-hover:scale-110 group-hover:rotate-12 transition-all duration-500 shadow-2xl">
+                  <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-3xl flex items-center justify-center text-white group-hover:scale-110 group-hover:rotate-12 transition-all duration-500 shadow-2xl">
                     {value.icon}
                   </div>
                   <div className="flex-1">
