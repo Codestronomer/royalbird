@@ -26,7 +26,6 @@ export const env = createEnv({
    */
   client: {
     // NEXT_PUBLIC_CLIENTVAR: z.string(),
-    NEXT_PUBLIC_BACKEND_API_URL: z.string().url()
   },
 
   /**
@@ -39,7 +38,6 @@ export const env = createEnv({
     BETTER_AUTH_GITHUB_CLIENT_SECRET:
       process.env.BETTER_AUTH_GITHUB_CLIENT_SECRET,
     DATABASE_URL: process.env.DATABASE_URL,
-    NEXT_PUBLIC_BACKEND_API_URL: process.env.BACKEND_API_URL,
     NODE_ENV: process.env.NODE_ENV,
   },
   /**
