@@ -40,7 +40,7 @@ export default function AboutPage() {
         <div className="absolute inset-0">
           {/* Background image */}
           <div
-            className="absolute inset-0 bg-contain bg-center"
+            className="absolute inset-0 bg-contain bg-center bg-no-repeat"
             style={{
               backgroundImage:
                 "url('https://velgg90lgs.ufs.sh/f/ymmBhW7qEDZCirLamEpXG9cToa4EOsCnyL3BVWvR1M0ZUd7e')",
