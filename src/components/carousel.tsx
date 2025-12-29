@@ -1,7 +1,7 @@
 "use client"
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
-import { ArrowLeft, Pause, Play, ZoomIn } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Maximize2, Minimize2, Pause, Play } from 'lucide-react';
 
 const comics = [
   {
@@ -74,147 +74,151 @@ export default function ComicCarousel() {
   const [current, setCurrent] = useState(0);
   const [isPlaying, setIsPlaying] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Auto-play logic
   useEffect(() => {
-    if (!isPlaying) return;
-
-  const interval = setInterval(() => {
-      setCurrent((prev) => (prev + 1) % comics.length);
-    }, 3000);
-
-    return () => clearInterval(interval);
-  }, [isPlaying]);
+    if (isPlaying) {
+      timerRef.current = setInterval(() => {
+        next();
+      }, 5000);
+    }
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, [isPlaying, current]);
 
   const next = () => setCurrent((prev) => (prev + 1) % comics.length);
   const prev = () => setCurrent((prev) => (prev - 1 + comics.length) % comics.length);
 
-  const goToSlide = (index: number) => setCurrent(index);
+  // Mobile Swipe Handlers
+  const handleTouchStart = (e: React.TouchEvent) => {
+    // Use optional chaining to safely get the clientX
+    const touch = e.targetTouches[0];
+    if (touch) {
+      setTouchStart(touch.clientX);
+    }
+  };
 
-  const toggleFullscreen = async () => {
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStart === null) return; // Strict check for null
+
+    const touch = e.changedTouches[0];
+    if (!touch) return; // Guard against undefined touch
+
+    const touchEnd = touch.clientX;
+    const distance = touchStart - touchEnd;
+
+    if (distance > 50) next(); 
+    if (distance < -50) prev(); 
+    
+    setTouchStart(null);
+  };
+
+  const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
-      await document.documentElement.requestFullscreen();
+      void document.documentElement.requestFullscreen();
       setIsFullscreen(true);
     } else {
-      await document.exitFullscreen()
+      void document.exitFullscreen();
       setIsFullscreen(false);
     }
   };
 
   return (
-    <div className="relative w-full max-w-5xl mx-auto group">
-      {/* Main carousel container */}
-      <div className="relative h-[600px] bg-gray-100 rounded-xl overflow-hidden shadow-2xl">
-        <div className="relative w-full h-full">
-          {comics.map((comic, index) => (
-            <div
+    <div className="relative w-full max-w-5xl mx-auto px-2 md:px-0">
+      <div 
+        className="relative aspect-[2/3] md:w-full md:h-[600px] bg-gray-900 rounded-2xl overflow-hidden shadow-2xl touch-pan-y"
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+      >
+        {/* Images */}
+        {comics.map((comic, index) => (
+          <div
             key={comic.key}
-            className={`absolute inset-0 transition-opacity duration-500 ${index === current ? 'opacity-100' : 'opacity-0'}`}
-            >
-              <Image
-                src={comic.url}
-                alt={comic.name}
-                fill
-                quality={75}
-                placeholder="blur"
-                blurDataURL="data:image/jpeg;base64,..."
-                className="object-cover"
-                sizes="(max-width: 768px) 100vw, (max-width:1200px) 50vw, 33vw"
-              />
-            </div>
-          ))}
-        </div>
+            className={`absolute inset-0 transition-all duration-700 ease-in-out ${
+              index === current ? 'opacity-100 scale-100' : 'opacity-0 scale-105 pointer-events-none'
+            }`}
+          >
+            <Image
+              src={comic.url}
+              alt={comic.name}
+              fill
+              priority={index === 0}
+              className="object-contain md:object-cover" // Contain on mobile to see full art, cover on desktop
+              sizes="(max-width: 768px) 100vw, 1200px"
+            />
+            {/* Dark gradient for text readability */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-black/40" />
+          </div>
+        ))}
 
-        {/* Navigation */}
+        {/* Desktop Navigation Arrows (Hidden on Mobile) */}
         <button
           onClick={prev}
-          className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300"
+          className="hidden md:flex absolute left-4 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white p-4 rounded-full transition-all"
         >
           <ArrowLeft size={24} />
         </button>
         <button
           onClick={next}
-          className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300"
+          className="hidden md:flex absolute right-4 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white p-4 rounded-full transition-all"
         >
-          <ArrowLeft size={24} className="rotate-180" />
+          <ArrowRight size={24} />
         </button>
 
-        {/* Top controls */}
-        <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+        {/* Top Controls */}
+        <div className="absolute top-4 right-4 flex gap-2">
           <button
             onClick={() => setIsPlaying(!isPlaying)}
-            className="bg-black/50 hover:bg-black/70 text-white p-2 rounded-lg transition-colors"
+            className="bg-black/40 backdrop-blur-md text-white p-3 rounded-xl hover:bg-black/60 transition-colors"
           >
             {isPlaying ? <Pause size={20} /> : <Play size={20} />}
           </button>
           <button
             onClick={toggleFullscreen}
-            className="bg-black/50 hover:bg-black/70 text-white p-2 rounded-lg transition-colors"
+            className="bg-black/40 backdrop-blur-md text-white p-3 rounded-xl hover:bg-black/60 transition-colors"
           >
-            <ZoomIn size={20} />
+            {isFullscreen ? <Minimize2 size={20} /> : <Maximize2 size={20} />}
           </button>
         </div>
 
-        {/* Bottom Info and indicators */}
-        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6 text-white">
-          <div className="text-center mb-4">
-            <h3 className="text-xl font-bold">{comics[current]?.name}</h3>
-            {/* <p className="text-sm opacity-90">{current + 1} / {comics.length}</p> */}
+        {/* Bottom Metadata */}
+        <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8 text-white">
+          <div className="mb-4">
+            <span className="text-xs font-bold uppercase tracking-widest text-blue-400">Featured Release</span>
+            <h3 className="text-2xl md:text-3xl font-black">{comics[current]?.name}</h3>
           </div>
 
-          {/* Progress Indicators */}
-          <div className="flex justify-center gap-2 mb-4">
-            {comics.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => goToSlide(index)}
-                className={`w-3 h-3 rounded-full transition-all ${
-                  index === current
-                    ? 'bg-white scale-125'
-                    : 'bg-white/50 hover:bg-white/70'
-                }`}
-              />
-            ))}
+          {/* Indicators */}
+          <div className="flex items-center gap-3">
+            <div className="flex-1 flex gap-1.5">
+              {comics.map((_, index) => (
+                <div 
+                  key={index}
+                  className="h-1 flex-1 bg-white/20 rounded-full overflow-hidden"
+                >
+                  <div 
+                    className={`h-full bg-blue-500 transition-all duration-[5000ms] ease-linear ${
+                      index === current && isPlaying ? 'w-full' : index < current ? 'w-full' : 'w-0'
+                    }`}
+                  />
+                </div>
+              ))}
+            </div>
+            <span className="text-xs font-mono opacity-60">
+              {String(current + 1).padStart(2, '0')} / {String(comics.length).padStart(2, '0')}
+            </span>
           </div>
-
-          {/* Thumbnail strip */}
-          {/* <div className="flex justify-center gap-2 overflow-x-auto pb-2">
-            {comics.map((comic, index) => (
-              <button
-                key={comic.key}
-                onClick={() => goToSlide(index)}
-                className={`flex-shrink-0 w-5 h-8 border-2 rounded transition-all ${
-                  index === current
-                    ? 'border-white scale-110'
-                    : 'border-transparent hover:scale-105'
-                }`}
-              >
-                <Image
-                  src={comic.url}
-                  alt={comic.name}
-                  fill
-                  // width={40}
-                  // height={40}
-                  className="object-cover max-h-8 rounded"
-                />
-              </button>
-            ))}
-          </div> */}
         </div>
       </div>
 
-      {/* Keyboard Navigation */}
-      <div
-        tabIndex={0}
-        className='outline-none'
-        onKeyDown={async (e) => {
-          if (e.key === 'ArrowLeft') prev();
-          if (e.key === 'ArrowRight') next();
-          if (e.key === ' ') setIsPlaying(!isPlaying);
-          if (e.key === 'Escape' && isFullscreen) await toggleFullscreen();
-        }}
-      />
+      {/* Mobile Swipe Hint (Optional) */}
+      <p className="text-center text-gray-500 text-xs mt-4 md:hidden">
+        Swipe left or right to browse
+      </p>
     </div>
-
-  )
+  );
 }
-
