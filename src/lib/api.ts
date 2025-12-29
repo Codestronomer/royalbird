@@ -1,17 +1,13 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-return */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/only-throw-error */
 import type { ApiResponse, ApiStatsResponse } from "~/types/api";
 import type { ApiBlogPostResponse, BlogCategory, BlogPost, LikeResponse, LikeStatusResponse, unlikeResponse, ViewResponse } from "~/types/blog";
 import type { ApiSubscriberResponse, PreferenceType, SubscriberStats } from "~/types/subscriber";
 import { v4 as uuidv4 } from 'uuid';
-import type { ApiComicResponse, ApiGenre, ApiTag, Comic, CreateComicType } from "~/types/comics";
-import type { AuthResponse, EmailChangeDto, PasswordChangeDto, SocialLoginDto, User, UserLoginDto, UserRegistrationDto, UserUpdateDto } from "~/types/user";
-import type { ApiDashboardOverviewResponse, ApiRealtimeResponse, AudienceInsights, ContentPerformance, EngagementMetricsResponse, TrendData } from "~/types/analytics";
+import type { ApiComicResponse, ApiGenre, ApiTag, CreateComicType } from "~/types/comics";
+import type { AuthResponse, EmailChangeDto, PasswordChangeDto, User, UserLoginDto, UserRegistrationDto, UserUpdateDto } from "~/types/user";
+import type { ApiDashboardOverviewResponse, ApiRealtimeResponse, AudienceInsights, ContentPerformance, EngagementMetricsResponse } from "~/types/analytics";
 
 // lib/api.ts
-const API_URL = process.env.BACKEND_API_URL ?? 'http://localhost:8000/api';
+const API_URL = process.env.NEXT_PUBLIC_BACKEND_API_URL;
 
 interface ApiError {
   message: string;
@@ -129,12 +125,11 @@ class ApiClient {
         }
       }
 
-      const data = await response.json();
+      const data = await response.json() as ApiResponse<T>;
 
       if (!response.ok) {
         const error: ApiError = {
-          message: data.message ?? data.error ?? 'Something went wrong',
-          details: data.details,
+          message: data.message ?? 'Something went wrong',
           statusCode: response.status,
         };
         
@@ -147,7 +142,7 @@ class ApiClient {
           error.message = 'Server error. Please try again later.';
         }
         
-        throw error;
+        throw error as Error;
       }
 
       return data;
@@ -157,7 +152,8 @@ class ApiClient {
         throw {
           message: 'Unable to connect to server. Please check your connection.',
           statusCode: 0,
-        };
+          name: 'Network Error'
+        } as Error;
       }
       throw error;
     }
@@ -274,7 +270,7 @@ class ApiClient {
     // For now, just return localStorage data
     if (typeof window === 'undefined') return { success: true, data: [] };
     
-    const bookmarkedSlugs = JSON.parse(localStorage.getItem('bookmarked_posts') ?? '[]');
+    const bookmarkedSlugs = JSON.parse(localStorage.getItem('bookmarked_posts') ?? '[]') as string[];
     return { success: true, data: bookmarkedSlugs };
   }
 
@@ -360,6 +356,51 @@ class ApiClient {
     return this.request(`/comics/${id}`, {
       method: 'DELETE'
     });
+  }
+
+  async incrementComicViews(id: string) {
+    const identifier = await this.getUserIdentifier();
+    
+    const response: ApiResponse<ViewResponse> = await this.request(`/comics/${id}/view`, {
+      method: 'POST',
+      body: JSON.stringify({ identifier })
+    });
+    return response;
+  }
+
+  async likeComic(id: string, identifier?: string) {
+    const userIdentifier = identifier ?? await this.getUserIdentifier();
+    
+    const response: ApiResponse<LikeResponse> = await this.request(`/comics/${id}/like`, {
+      method: 'POST',
+      body: JSON.stringify({ 
+        userId: userIdentifier,
+        timestamp: new Date().toISOString(),
+        userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : ''
+      })
+    });
+
+    return response;
+  }
+
+  async unlikeComic(id: string, identifier?: string) {
+    const userIdentifier = identifier ?? await this.getUserIdentifier();
+    
+    const response: ApiResponse<unlikeResponse> = await this.request(`/comics/${id}/unlike`, {
+      method: 'POST',
+      body: JSON.stringify({ 
+        userId: userIdentifier,
+        timestamp: new Date().toISOString()
+      })
+    });
+    return response;
+  }
+
+  async checkComicLikeStatus(id: string, identifier?: string) {
+    const userIdentifier = identifier ?? await this.getUserIdentifier();
+    
+    const response: ApiResponse<LikeStatusResponse> = await this.request(`/comics/${id}/like-status?userId=${encodeURIComponent(userIdentifier)}`);
+    return response;
   }
 
   async updateBlogPost(id: string, blogData: Partial<BlogPost>) {

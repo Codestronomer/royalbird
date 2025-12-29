@@ -19,7 +19,7 @@ export default function Home() {
       id: 2,
       title: "Breach (Issue #2)",
       description: "Onari's journey continues into the Forsaken. still reluctant to join the fight, it is obvious something must be done to save the people.",
-      image: "https://globalcomix-comics-assets-files-desktop.nyc3.cdn.digitaloceanspaces.com/26717/7197930_8a65918365201842a63b8f1886bb639f.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=TRO77LWUBQ62LDGV44EB/20251212/us-east-1/s3/aws4_request&X-Amz-Date=20251212T011329Z&X-Amz-Expires=86430&X-Amz-SignedHeaders=host&X-Amz-Signature=58a819fd508c81b94f75b959380d8b2e83b556f86b574927b96d0ae9bb8f961e",
+      image: "https://velgg90lgs.ufs.sh/f/ymmBhW7qEDZCwVnJbzHX8cBAhqQlatjysEH4IeYN5Vodrvxb",
       rating: 4.9
     },
     {
