@@ -170,7 +170,7 @@ export default function AdminDashboard() {
             <p className="text-sm text-gray-600">Create a new blog article</p>
           </Link>
           <Link
-            href="/admin/upload"
+            href="https://uploadthing.com/dashboard"
             className="group bg-gradient-to-r from-green-50 to-green-100 border border-green-200 rounded-xl p-5 hover:shadow-lg transition-shadow"
           >
             <Download className="h-8 w-8 text-green-600 mb-3" />
