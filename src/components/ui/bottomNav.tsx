@@ -1,8 +1,9 @@
 "use client";
 
-import { BookOpen, Home, Newspaper, User, Menu, X, type LucideProps } from "lucide-react";
+import { BookOpen, Home, Newspaper, User, Menu, X, Moon, Sun, type LucideProps } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import React, { useState } from "react";
+import { useTheme } from "~/hooks/useTheme";
 
 export default function BottomNav() {
   const router = useRouter();
@@ -42,7 +43,7 @@ export default function BottomNav() {
   };
 
   return (
-    <nav className={`fixed bottom-6 md:left-1/2 ${!isExpanded ? 'right-0': 'left-1/2'} transform -translate-x-1/2 flex items-center justify-between w-fit bg-white/95 backdrop-blur-md rounded-full p-3 text-xl font-semibold shadow-2xl border border-gray-300/50 z-50 transition-all duration-300`}>
+    <nav style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }} className={`fixed bottom-6 md:left-1/2 ${!isExpanded ? 'right-0': 'left-1/2'} transform -translate-x-1/2 flex items-center justify-between w-fit backdrop-blur-md rounded-full p-3 text-xl font-semibold shadow-2xl border z-50 transition-all duration-300`}>
       {/* Mobile Toggle Button (Visible only on small screens) */}
       <div className="md:hidden">
         {!isExpanded ? (
@@ -84,6 +85,8 @@ interface NavItemType {
  * Sub-component to keep the original mapping and styling identical
  */
 function NavContent({ navItems, handleNavigation }: { navItems: NavItemType[], handleNavigation: (p: string) => void }) {
+  const { theme, toggleTheme } = useTheme();
+
   return (
     <div className="flex items-center justify-around gap-3">
       {navItems.map((item) => {
@@ -107,16 +110,21 @@ function NavContent({ navItems, handleNavigation }: { navItems: NavItemType[], h
             />
             
             {item.active && (
-              <div className="absolute -top-1 -right-1 w-2 h-2 bg-white rounded-full border-2 border-purple-600" />
+              <div className="absolute -top-1 -right-1 w-2 h-2 bg-white rounded-full" style={{ border: '2px solid var(--accent)' }} />
             )}
             
-            <div className="absolute -top-12 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs font-medium px-2 py-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap pointer-events-none">
+            <div className="absolute -top-12 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs font-medium px-2 py-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap pointer-events-none" style={{ backgroundColor: 'var(--popover)', color: 'var(--popover-foreground)' }}>
               {item.label}
-              <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1 w-2 h-2 bg-gray-900 rotate-45" />
+              <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1 w-2 h-2 bg-gray-900 rotate-45" style={{ backgroundColor: 'var(--popover)' }} />
             </div>
           </button>
         );
       })}
+
+      {/* Theme toggle button */}
+      <button onClick={toggleTheme} className="p-3 rounded-full transition-colors theme-toggle" aria-label="Toggle theme">
+        {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+      </button>
     </div>
   );
 }

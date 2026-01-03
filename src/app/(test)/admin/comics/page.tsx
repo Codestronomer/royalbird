@@ -75,8 +75,7 @@ export default function ComicsManagement() {
     if (!confirm(`Are you sure you want to delete "${title}"?`)) return;
     
     try {
-      // In real app, call delete API
-      // await api.deleteComic(id);
+      await api.deleteComic(id);
       setComics(comics.filter((comic: Comic) => comic.id !== id));
       toast.success('Comic deleted successfully');
     } catch (error) {
@@ -86,8 +85,7 @@ export default function ComicsManagement() {
 
   const handleStatusChange = async (id: string, newStatus: 'draft' | 'published' | 'scheduled' | 'archived') => {
     try {
-      // In real app, call update API
-      // await api.updateComicStatus(id, newStatus);
+      await api.updateComic(id, { status: newStatus });
       setComics(comics.map((comic: Comic) => 
         comic.id === id ? { ...comic, status: newStatus } : comic
       ));

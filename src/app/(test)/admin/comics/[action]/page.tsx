@@ -1,7 +1,7 @@
-import BlogForm from "~/components/blog/blogForm";
+import ComicForm from "~/components/comic/comicForm";
 
 export default function Page() {
   return (
-    <BlogForm action={'new'} />
+    <ComicForm action={'new'} />
   )
 }

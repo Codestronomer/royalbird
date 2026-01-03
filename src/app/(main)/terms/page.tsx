@@ -8,12 +8,12 @@ export default function TermsPage() {
     {
       title: "Acceptance of Terms",
       icon: <CheckCircle className="w-6 h-6" />,
-      content: "By accessing and using Royalbird Studios' website, services, and content, you agree to be bound by these Terms of Service. If you disagree with any part of these terms, you may not access our services."
+      content: "By accessing and using Royal Bird Studios' website, services, and content, you agree to be bound by these Terms of Service. If you disagree with any part of these terms, you may not access our services."
     },
     {
       title: "Content Ownership",
       icon: <BookOpen className="w-6 h-6" />,
-      content: "All original comics, animations, artwork, characters, stories, and intellectual property displayed on this site are the exclusive property of Royalbird Studios unless otherwise stated. Content may not be reproduced, distributed, or used commercially without explicit written permission."
+      content: "All original comics, animations, artwork, characters, stories, and intellectual property displayed on this site are the exclusive property of Royal Bird Studios unless otherwise stated. Content may not be reproduced, distributed, or used commercially without explicit written permission."
     },
     {
       title: "User Conduct",
@@ -23,7 +23,7 @@ export default function TermsPage() {
     {
       title: "Copyright & DMCA",
       icon: <Shield className="w-6 h-6" />,
-      content: "Royalbird Studios respects intellectual property rights. If you believe your work has been copied in a way that constitutes copyright infringement, please contact us with detailed information. We will promptly investigate claims of copyright infringement."
+      content: "Royal Bird Studios respects intellectual property rights. If you believe your work has been copied in a way that constitutes copyright infringement, please contact us with detailed information. We will promptly investigate claims of copyright infringement."
     },
     {
       title: "Limitation of Liability",
@@ -64,7 +64,7 @@ export default function TermsPage() {
             <div className="w-24 h-1 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full mx-auto mb-8" />
 
             <p className="text-xl text-slate-600 max-w-2xl mx-auto leading-relaxed">
-              Please read these terms carefully before using Royalbird Studios&apos; website, comics, or services.
+              Please read these terms carefully before using Royal Bird Studios&apos; website, comics, or services.
             </p>
 
             <div className="mt-8 inline-flex items-center gap-2 text-slate-500">

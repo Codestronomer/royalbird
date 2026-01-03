@@ -203,7 +203,7 @@ export default function ComicForm({ action, slug }: ComicFormProps) {
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">Slug *</label>
-                <input type="text" required value={formData.slug} disabled={action === 'edit'} className="w-full px-4 py-2 border rounded-lg bg-gray-50 disabled:text-gray-400" />
+                <input type="text" required value={formData.slug} readOnly disabled={action === 'edit'} className="w-full px-4 py-2 border rounded-lg bg-gray-50 disabled:text-gray-400" />
               </div>
             </div>
             <div>

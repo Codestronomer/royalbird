@@ -248,7 +248,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
                 {/* <div className="mt-16">
                   <BlogAuthor 
                     author={post.author}
-                    bio="Creator & Storyteller at Royalbird Studios"
+                    bio="Creator & Storyteller at Royal Bird Studios"
                     postCount={Math.floor(Math.random() * 50) + 10}
                     joinDate={new Date('2020-01-01').toISOString()}
                   />
@@ -262,7 +262,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
                       Enjoyed this story?
                     </h3>
                     <p className="text-slate-600">
-                      Share your thoughts with the Royalbird community
+                      Share your thoughts with the Royal Bird community
                     </p>
                   </div>
                   <div className="flex flex-wrap gap-4">

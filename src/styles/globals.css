@@ -82,37 +82,292 @@
 }
 
 .dark {
-  --background: oklch(0.141 0.005 285.823);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.21 0.006 285.885);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.21 0.006 285.885);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.92 0.004 286.32);
-  --primary-foreground: oklch(0.21 0.006 285.885);
-  --secondary: oklch(0.274 0.006 286.033);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.274 0.006 286.033);
-  --muted-foreground: oklch(0.705 0.015 286.067);
-  --accent: oklch(0.274 0.006 286.033);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.552 0.016 285.938);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.21 0.006 285.885);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.274 0.006 286.033);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.552 0.016 285.938);
+  /* Updated to match footer's metallic dark grey with purple accents */
+  --background: #0d0e0f; /* Slightly darker metallic grey for base background */
+  --foreground: #F3F1FB; /* Bright foreground for headings */
+  --card: #121314; /* Card/popup background */
+  --card-foreground: #F3F1FB;
+  --popover: #161718; /* Popover background */
+  --popover-foreground: #ECECF6;
+  --primary: #7c3aed; /* Purple accent */
+  --primary-foreground: #FFFFFF;
+  --secondary: #5b21b6; /* Darker purple */
+  --secondary-foreground: #FFFFFF;
+  --muted: #1c1d1e; /* Muted background */
+  --muted-foreground: #b0adc9; /* Slightly dimmer text for secondary content */
+  --accent: #7c3aed; /* Purple accent */
+  --accent-foreground: #FFFFFF;
+  --destructive: #dc2626;
+  --border: rgba(255, 255, 255, 0.08); /* Subtle borders */
+  --input: #171819; /* Input background */
+  --ring: rgba(124, 58, 237, 0.5);
+  --chart-1: #8b5cf6;
+  --chart-2: #7c3aed;
+  --chart-3: #6d28d9;
+  --chart-4: #f472b6;
+  --chart-5: #f59e0b;
+  --sidebar: #141516;
+  --sidebar-foreground: #E9E6F2;
+  --sidebar-primary: #7c3aed;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #7c3aed;
+  --sidebar-accent-foreground: #FFFFFF;
+  --sidebar-border: rgba(255, 255, 255, 0.06);
+  --sidebar-ring: rgba(124, 58, 237, 0.4);
+}
+
+/* Dark overrides for common Tailwind utility classes */
+.dark body {
+  background-color: var(--background) !important;
+  color: var(--muted-foreground) !important;
+}
+
+.dark .bg-white { 
+  background-color: var(--card) !important; 
+}
+
+.dark .bg-white\/95 { 
+  background-color: rgba(18, 19, 20, 0.95) !important; 
+}
+
+.dark .bg-white\/10 { 
+  background-color: rgba(255, 255, 255, 0.06) !important; 
+}
+
+.dark .bg-gray-100, .dark .bg-gray-50 { 
+  background-color: var(--muted) !important; 
+}
+
+.dark .bg-gray-200 { 
+  background-color: var(--muted) !important; 
+}
+
+.dark .text-gray-900, .dark .text-gray-800 { 
+  color: var(--foreground) !important; 
+}
+
+.dark .text-gray-600, .dark .text-gray-500, .dark .text-gray-400 { 
+  color: var(--muted-foreground) !important; 
+}
+
+.dark .border-gray-200, .dark .border-gray-100, .dark .border-slate-300, .dark .border-gray-300\/50 { 
+  border-color: var(--border) !important; 
+}
+
+.dark input, .dark textarea, .dark .bg-gray-50 { 
+  background-color: var(--input) !important; 
+  color: var(--foreground) !important; 
+  border-color: var(--border) !important; 
+}
+
+/* Homepage-specific background gradients to match footer */
+.dark .bg-gradient-to-br.from-gray-900.via-gray-800.to-purple-950 {
+  background-image: linear-gradient(to bottom right, var(--background), var(--muted), var(--secondary)) !important;
+}
+
+.dark .bg-gradient-to-b.from-gray-900.via-gray-800\/90.to-gray-900 {
+  background-image: linear-gradient(to bottom, var(--background), rgba(28, 29, 30, 0.9), var(--background)) !important;
+}
+
+.dark .bg-gradient-to-b.from-gray-900.via-gray-800\/95.to-gray-900 {
+  background-image: linear-gradient(to bottom, var(--background), rgba(28, 29, 30, 0.95), var(--background)) !important;
+}
+
+.dark .bg-gradient-to-b.from-gray-900\/95.via-gray-800\/90.to-gray-900\/95 {
+  background-image: linear-gradient(to bottom, rgba(13, 14, 15, 0.95), rgba(28, 29, 30, 0.9), rgba(13, 14, 15, 0.95)) !important;
+}
+
+.dark .bg-gradient-to-br.from-gray-900.via-purple-950\/60.to-gray-900 {
+  background-image: linear-gradient(to bottom right, var(--background), rgba(91, 33, 182, 0.6), var(--background)) !important;
+}
+
+/* White translucent utilities */
+.dark .bg-white\/5 { 
+  background-color: rgba(255, 255, 255, 0.03) !important; 
+}
+
+.dark .bg-white\/10 { 
+  background-color: rgba(255, 255, 255, 0.06) !important; 
+}
+
+.dark .bg-white\/20 { 
+  background-color: rgba(255, 255, 255, 0.12) !important; 
+}
+
+.dark .border-white\/10 { 
+  border-color: rgba(255, 255, 255, 0.06) !important; 
+}
+
+.dark .border-white\/20 { 
+  border-color: rgba(255, 255, 255, 0.12) !important; 
+}
+
+/* Blue / slate backgrounds used on pages */
+.dark .bg-blue-50, .dark .bg-blue-50\/40 { 
+  background-color: rgba(18, 19, 20, 0.04) !important; 
+}
+
+.dark .bg-slate-50, .dark .bg-slate-100 { 
+  background-color: rgba(255, 255, 255, 0.02) !important; 
+}
+
+/* Footer background to match the updated theme */
+.dark footer {
+  background: linear-gradient(180deg, var(--card), rgba(18, 19, 20, 0.9)) !important;
+  color: var(--muted-foreground) !important;
+}
+
+.dark footer p, .dark footer span, .dark footer a { 
+  color: var(--muted-foreground) !important; 
+}
+
+.dark footer .text-slate-700, .dark footer .text-slate-600, .dark footer .text-slate-800 { 
+  color: var(--muted-foreground) !important; 
+}
+
+.dark footer .border-t { 
+  border-color: var(--sidebar-border) !important; 
+}
+
+.dark .group.bg-slate-100 { 
+  background-color: rgba(255, 255, 255, 0.03) !important; 
+  border-color: rgba(255, 255, 255, 0.04) !important; 
+}
+
+/* Buttons & forms */
+.dark .bg-gradient-to-r.from-blue-600.to-purple-600 { 
+  background-image: linear-gradient(90deg, var(--primary), var(--accent)) !important; 
+}
+
+.dark .bg-gradient-to-br.from-blue-600.to-purple-600 { 
+  background-image: linear-gradient(135deg, var(--primary), var(--accent)) !important; 
+}
+
+.dark input, .dark textarea, .dark select { 
+  background-color: var(--input) !important; 
+  color: var(--foreground) !important; 
+  border-color: var(--border) !important; 
+}
+
+/* Cards and panels */
+.dark .bg-white, .dark .bg-white\/95, .dark .bg-white\/10, .dark .bg-white\/5, .dark .bg-slate-100 { 
+  background-color: var(--card) !important; 
+}
+
+.dark .border-slate-200, .dark .border-slate-100 { 
+  border-color: var(--border) !important; 
+}
+
+/* Ensure sections with explicit background gradients use dark-friendly fallback */
+.dark .bg-gradient-to-b.from-white { 
+  background-image: linear-gradient(180deg, var(--card), rgba(18, 19, 20, 0.85)) !important; 
+}
+
+/* Ensure headings and base text are readable in dark mode */
+.dark h1, .dark h2, .dark h3, .dark h4, .dark h5, .dark h6 { 
+  color: var(--foreground) !important; 
+}
+
+.dark p, .dark span, .dark li, .dark a { 
+  color: var(--muted-foreground) !important; 
+}
+
+.dark a:hover { 
+  color: var(--primary) !important; 
+}
+
+/* Text color adjustments */
+.dark .text-white\/80 { 
+  color: rgba(243, 241, 251, 0.85) !important; 
+}
+
+.dark .text-white\/60 { 
+  color: rgba(243, 241, 251, 0.65) !important; 
+}
+
+.dark .text-white { 
+  color: var(--foreground) !important; 
+}
+
+.dark .text-slate-700, .dark .text-slate-800, .dark .text-slate-900 { 
+  color: var(--foreground) !important; 
+}
+
+.dark .text-slate-500, .dark .text-gray-500, .dark .text-gray-400 { 
+  color: var(--muted-foreground) !important; 
+}
+
+/* Specific tweaks for components that used translucent whites */
+.dark .swiper-button-next, .dark .swiper-button-prev { 
+  background: rgba(255, 255, 255, 0.06); 
+}
+
+.dark .h-1.bg-white\/20 { 
+  background-color: rgba(255, 255, 255, 0.06) !important; 
+}
+
+/* Purple accent backgrounds for consistency */
+.dark .bg-purple-500 { 
+  background-color: var(--primary) !important; 
+}
+
+.dark .bg-purple-600 { 
+  background-color: var(--secondary) !important; 
+}
+
+.dark .text-purple-400 { 
+  color: rgba(124, 58, 237, 0.9) !important; 
+}
+
+.dark .text-purple-500 { 
+  color: var(--primary) !important; 
+}
+
+/* Gradient button backgrounds */
+.dark .bg-gradient-to-r.from-purple-700.to-pink-700 {
+  background-image: linear-gradient(to right, var(--secondary), #9d174d) !important;
+}
+
+.dark .bg-gradient-to-r.from-purple-600.to-pink-600 {
+  background-image: linear-gradient(to right, var(--primary), #db2777) !important;
+}
+
+/* Theme toggle visual */
+.theme-toggle { 
+  color: var(--muted-foreground); 
+}
+
+.dark .theme-toggle { 
+  color: var(--accent) !important; 
+}
+
+/* Add metallic texture overlay for depth */
+.dark::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    linear-gradient(45deg, rgba(255, 255, 255, 0.02) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, rgba(255, 255, 255, 0.02) 75%),
+    linear-gradient(45deg, transparent 75%, rgba(255, 255, 255, 0.02) 75%),
+    linear-gradient(45deg, rgba(255, 255, 255, 0.02) 25%, transparent 25%);
+  background-size: 2px 2px;
+  background-position: 0 0, 0 1px, 1px -1px, -1px 0px;
+  pointer-events: none;
+  z-index: -1;
+  opacity: 0.3;
+}
+
+/* Ensure main content areas have proper contrast */
+.dark main {
+  background-color: transparent;
+}
+
+.dark section {
+  background-color: transparent;
 }
 
 @layer base {
