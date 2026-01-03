@@ -142,11 +142,22 @@ export default function ComicCarousel() {
   return (
     <div className="relative w-full max-w-5xl mx-auto px-2 md:px-0">
       <div
-        ref={containerRef}
-        className="relative aspect-[2/3] md:w-full md:h-[600px] bg-gray-900 rounded-2xl overflow-hidden shadow-2xl touch-pan-y"
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
-      >
+          ref={containerRef}
+          className="
+    relative
+    w-full
+    aspect-video              /* landscape on mobile */
+    md:aspect-auto
+    md:h-[600px]               /* fixed height on desktop */
+    bg-gray-900
+    rounded-2xl
+    overflow-hidden
+    shadow-2xl
+    touch-pan-y
+          "
+           onTouchStart={handleTouchStart}
+           onTouchEnd={handleTouchEnd}
+        >
         {/* Images */}
         {comics.map((comic, index) => (
           <div
