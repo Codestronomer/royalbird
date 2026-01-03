@@ -1,11 +1,12 @@
 "use client"
 import Image from "next/image";
 import { AlertCircle, ArrowUp, Check, Heart, Mail, MapPin, Phone, X } from "lucide-react";
-import { SiInstagram, SiTiktok, SiThreads, SiYoutube } from '@icons-pack/react-simple-icons';
+import { SiInstagram, SiTiktok, SiYoutube } from '@icons-pack/react-simple-icons';
 import { api } from '~/lib/api';
 import * as z from 'zod';
 import { useState } from "react";
 import { useTheme } from "~/hooks/useTheme";
+import SiLinkedin from "./icons/linkedin";
 
 export default function Footer() {
   const { theme } = useTheme();
@@ -284,11 +285,11 @@ export default function Footer() {
             }`}>Follow our journey</p>
             <div className="flex justify-center gap-4">
               {[
-                { icon: <X size={20} />, name: 'Twitter', url: '#' },
-                { icon: <SiInstagram size={20} />, name: 'Instagram', url: '#' },
-                { icon: <SiYoutube size={20} />, name: 'YouTube', url: '#' },
-                { icon: <SiTiktok size={20} />, name: 'TikTok', url: '#' },
-                { icon: <SiThreads size={20} />, name: 'Threads', url: '#' },
+                { icon: <X size={20} />, name: 'Twitter', url: 'https://x.com/royalbirdcomics?s=21' },
+                { icon: <SiInstagram size={20} />, name: 'Instagram', url: 'https://www.instagram.com/royalbird_studios?igsh=OWIwZWZkMTliMjNv&utm_source=qr' },
+                { icon: <SiYoutube size={20} />, name: 'YouTube', url: 'https://youtube.com/@royalbirdstudios?si=IVK9PqKD_ylLOhTn' },
+                { icon: <SiTiktok size={20} />, name: 'TikTok', url: 'https://www.tiktok.com/@royalbirdcomics?_r=1&_t=ZS-92lrpSQclwF' },
+                { icon: <SiLinkedin size={20} />, name: 'Linkedin', url: 'https://www.linkedin.com/company/royal-bird-studios/' },
               ].map((social) => (
                 <a
                   key={social.name}

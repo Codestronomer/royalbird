@@ -100,23 +100,43 @@ export default function Home() {
     <main className="min-h-screen transition-colors duration-500">
       {/* Hero Section */}
       <section className={`relative min-h-screen flex items-center justify-center overflow-hidden transition-all duration-500 ${currentBackgrounds.hero}`}>
-        {/* Background Pattern - Consistent across sections */}
+        {/* Background Pattern with Image - Consistent across sections */}
         <div className="absolute inset-0">
+          {/* Background Image */}
+          <div 
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-50 transition-all duration-500"
+            style={{
+              backgroundImage: theme === 'dark'
+                ? "url('https://velgg90lgs.ufs.sh/f/ymmBhW7qEDZCYZH8qO4opdWL2RExlqSG7OCMBwnDgkFtraAv')"
+                : "url('')"
+            }}
+          />
+          
+          {/* Color Overlay for Image */}
+          <div className={`absolute inset-0 transition-all duration-500 ${
+            theme === 'dark'
+              ? 'bg-gradient-to-br from-gray-900/40 via-transparent to-purple-950/30'
+              : 'bg-gradient-to-br from-blue-50/40 via-transparent to-purple-50/30'
+          }`} />
+          
+          {/* Radial Gradients */}
           <div className={`absolute inset-0 transition-all duration-500 ${
             theme === 'dark' 
               ? 'bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(147,51,234,0.15),rgba(0,0,0,0))]' 
               : 'bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(59,130,246,0.08),rgba(255,255,255,0))]'
           }`} />
+          
           <div className={`absolute inset-0 transition-all duration-500 ${
             theme === 'dark'
               ? 'bg-[radial-gradient(ellipse_50%_50%_at_30%_70%,rgba(168,85,247,0.1),rgba(0,0,0,0))]'
               : 'bg-[radial-gradient(ellipse_50%_50%_at_30%_70%,rgba(139,92,246,0.05),rgba(255,255,255,0))]'
           }`} />
-          {/* Consistent mesh pattern */}
+          
+          {/* Mesh Pattern */}
           <div className={`absolute inset-0 transition-all duration-500 ${
             theme === 'dark'
-              ? 'bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:64px_64px] opacity-50'
-              : 'bg-[linear-gradient(rgba(0,0,0,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(0,0,0,0.02)_1px,transparent_1px)] bg-[size:64px_64px] opacity-70'
+              ? 'bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:64px_64px] opacity-30'
+              : 'bg-[linear-gradient(rgba(0,0,0,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(0,0,0,0.02)_1px,transparent_1px)] bg-[size:64px_64px] opacity-50'
           }`} />
         </div>
 

@@ -118,7 +118,7 @@ export default function ComicsPage() {
         {/* HERO SECTION (Same as Previous Version) */}
         <section className="relative py-20 overflow-hidden min-h-[70vh] flex items-center">
           <div className="absolute inset-0">
-            <div className="absolute inset-0 bg-cover bg-center bg-no-repeat" style={{ backgroundImage: 'url("https://velgg90lgs.ufs.sh/f/ymmBhW7qEDZCtvvxhMsTokwtWSCKHZy710dYzip9cuJgEVRa")' }} />
+            <div className="absolute inset-0 bg-cover bg-center bg-no-repeat" style={{ backgroundImage: 'url("https://velgg90lgs.ufs.sh/f/ymmBhW7qEDZCLHF0mkZYQ9joXds68g5cJSwp3CuRxOf74iNz")' }} />
             <div className="absolute inset-0 bg-gradient-to-br from-blue-900/80 via-purple-900/70 to-slate-900/90" />
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(255,255,255,0.1)_1px,transparent_1px)] bg-[length:20px_20px] opacity-10" />
           </div>
