@@ -29,7 +29,7 @@ const comics = [
     "uploadedAt": "2025-11-16T01:26:34.000Z"
   },
   {
-    "name": "IMG_6443.PNG",
+    "name": "Breach",
     "key": "ymmBhW7qEDZCvujmmuwnr6QhBCf01XYDbMTEa2JVi8HIeFyL",
     "customId": null,
     "url": "https://velgg90lgs.ufs.sh/f/ymmBhW7qEDZCvujmmuwnr6QhBCf01XYDbMTEa2JVi8HIeFyL",
@@ -37,7 +37,7 @@ const comics = [
     "uploadedAt": "2025-12-19T04:00:06.000Z"
   },
   {
-    "name": "IMG_6444.PNG",
+    "name": "Breach",
     "key": "ymmBhW7qEDZCNsk8BormyksCi7f4MLRxgTSruQ3hwIcJlj9V",
     "customId": null,
     "url": "https://velgg90lgs.ufs.sh/f/ymmBhW7qEDZCNsk8BormyksCi7f4MLRxgTSruQ3hwIcJlj9V",
@@ -53,7 +53,7 @@ const comics = [
     "uploadedAt": "2025-11-16T01:26:34.000Z"
   },
   {
-    "name": "IMG_6445.PNG",
+    "name": "Breach",
     "key": "ymmBhW7qEDZCOW7ejeydnSvhkqm0O9XUjIeaiTAs1W3LltbM",
     "customId": null,
     "url": "https://velgg90lgs.ufs.sh/f/ymmBhW7qEDZCOW7ejeydnSvhkqm0O9XUjIeaiTAs1W3LltbM",
@@ -61,7 +61,7 @@ const comics = [
     "uploadedAt": "2025-12-19T04:00:05.000Z"
   },
   {
-    "name": "IMG-20251120-WA0009.jpg",
+    "name": "Swapped",
     "key": "ymmBhW7qEDZCt0wwZmsTokwtWSCKHZy710dYzip9cuJgEVRa",
     "customId": null,
     "url": "https://velgg90lgs.ufs.sh/f/ymmBhW7qEDZCt0wwZmsTokwtWSCKHZy710dYzip9cuJgEVRa",
