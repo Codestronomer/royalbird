@@ -123,7 +123,7 @@ export default function Footer() {
               }`}
             />
             <p className={`text-lg mb-6 max-w-md transition-all duration-500 ${
-              theme === 'dark' ? 'text-[var(--foreground)]' : 'text-slate-700'
+              theme === 'dark' ? 'text-white' : 'text-slate-700'
             }`}>
               Bringing a rich tapestry of stories, myths, and heroes to life through 
               breathtaking comics and authentic storytelling.
@@ -132,7 +132,7 @@ export default function Footer() {
             {/* Newsletter Signup */}
             <div className="max-w-md">
               <p className={`mb-3 font-semibold transition-all duration-500 ${
-                theme === 'dark' ? 'text-[var(--foreground)]' : 'text-slate-600'
+                theme === 'dark' ? 'text-white' : 'text-slate-600'
               }`}>Stay updated with new releases</p>
               <form onSubmit={handleSubscribe} className="space-y-3">
                 {showNameField && (
@@ -204,7 +204,7 @@ export default function Footer() {
                 )}
 
                 <p className={`text-xs transition-all duration-500 ${
-                  theme === 'dark' ? 'text-[var(--muted-foreground)]' : 'text-slate-500'
+                  theme === 'dark' ? 'text-white/80' : 'text-slate-500'
                 }`}>
                   By subscribing, you agree to our Privacy Policy and consent to receive 
                   updates about new comics, blog posts, and studio announcements.
@@ -216,14 +216,14 @@ export default function Footer() {
           {/* Quick Links */}
           <div>
             <h4 className={`font-bold text-lg mb-4 transition-all duration-500 ${
-              theme === 'dark' ? 'text-[var(--foreground)]' : 'text-slate-800'
+              theme === 'dark' ? 'text-white' : 'text-slate-800'
             }`}>Explore</h4>
             <ol className="space-y-3">
               {['Featured Comics', 'New Releases', 'Popular Series', 'Free Reads', 'Behind the Scenes'].map((item) => (
                 <li key={item}>
                   <a href="#" className={`transition-colors duration-200 flex items-center gap-2 group ${
                     theme === 'dark'
-                      ? 'text-[var(--muted-foreground)] hover:text-[var(--primary)]'
+                      ? 'text-white hover:text-[var(--primary)]'
                       : 'text-slate-600 hover:text-blue-600'
                   }`}>
                     <div className={`w-1 h-1 rounded-full transition-all duration-500 group-hover:opacity-100 ${
@@ -241,18 +241,18 @@ export default function Footer() {
           {/* Contact & Support */}
           <div>
             <h4 className={`font-bold text-lg mb-4 transition-all duration-500 ${
-              theme === 'dark' ? 'text-[var(--foreground)]' : 'text-slate-800'
+              theme === 'dark' ? 'text-white' : 'text-slate-800'
             }`}>Contact</h4>
             <div className={`space-y-3 transition-all duration-500 ${
-              theme === 'dark' ? 'text-[var(--muted-foreground)]' : 'text-slate-600'
+              theme === 'dark' ? 'text-white' : 'text-slate-600'
             }`}>
               <div className={`flex items-center gap-3 transition-colors cursor-pointer group ${
-                theme === 'dark' ? 'hover:text-[var(--primary)]' : 'hover:text-blue-600'
+                theme === 'dark' ? 'hover:text-white' : 'hover:text-blue-600'
               }`}>
                 <Mail size={22} className={`transition-colors ${
                   theme === 'dark' ? 'text-[var(--primary)] group-hover:text-[var(--primary)]/80' : 'text-blue-500 group-hover:text-blue-600'
                 }`} />
-                <span>hello@royalbirdstudios.com</span>
+                <span className={`${theme === 'dark' ? 'text-white' : 'text-slate-600'}`}>hello@royalbirdstudios.com</span>
               </div>
               <div className={`flex items-center gap-3 transition-colors cursor-pointer group ${
                 theme === 'dark' ? 'hover:text-[var(--primary)]' : 'hover:text-blue-600'
@@ -260,7 +260,7 @@ export default function Footer() {
                 <Phone size={16} className={`transition-colors ${
                   theme === 'dark' ? 'text-[var(--primary)] group-hover:text-[var(--primary)]/80' : 'text-blue-500 group-hover:text-blue-600'
                 }`} />
-                <span>+234 (555) 123-4567</span>
+                <span className={`${theme === 'dark' ? 'text-white' : 'text-slate-600'}`}>+234 (555) 123-4567</span>
               </div>
               <div className={`flex items-center gap-3 transition-colors cursor-pointer group ${
                 theme === 'dark' ? 'hover:text-[var(--primary)]' : 'hover:text-blue-600'
@@ -268,7 +268,7 @@ export default function Footer() {
                 <MapPin size={20} className={`transition-colors ${
                   theme === 'dark' ? 'text-[var(--primary)] group-hover:text-[var(--primary)]/80' : 'text-blue-500 group-hover:text-blue-600'
                 }`} />
-                <span>Abuja, Nigeria</span>
+                <span className={`${theme === 'dark' ? 'text-white' : 'text-slate-600'}`}>Abuja, Nigeria</span>
               </div>
             </div>
           </div>
@@ -281,7 +281,7 @@ export default function Footer() {
           {/* Social Media Links */}
           <div className="flex flex-col items-center mb-6">
             <p className={`mb-4 font-semibold transition-all duration-500 ${
-              theme === 'dark' ? 'text-[var(--foreground)]' : 'text-slate-600'
+              theme === 'dark' ? 'text-white/80' : 'text-slate-600'
             }`}>Follow our journey</p>
             <div className="flex justify-center gap-4">
               {[
@@ -317,13 +317,13 @@ export default function Footer() {
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="flex flex-col items-center gap-2 text-sm">
               <span className={`transition-all duration-500 ${
-                theme === 'dark' ? 'text-[var(--muted-foreground)]' : 'text-slate-500'
+                theme === 'dark' ? 'text-white/60' : 'text-slate-500'
               }`}>© 2025 Royalbird Studios. All rights reserved.</span>
               <div className="flex gap-4">
                 <a 
                   href="/privacy" 
                   className={`transition-colors ${
-                    theme === 'dark' ? 'text-[var(--muted-foreground)] hover:text-[var(--primary)]' : 'hover:text-blue-600'
+                    theme === 'dark' ? 'text-white/80 hover:text-[var(--primary)]' : 'hover:text-blue-600'
                   }`}
                 >
                   Privacy
@@ -331,7 +331,7 @@ export default function Footer() {
                 <a 
                   href="/terms" 
                   className={`transition-colors ${
-                    theme === 'dark' ? 'text-[var(--muted-foreground)] hover:text-[var(--primary)]' : 'hover:text-blue-600'
+                    theme === 'dark' ? 'text-white/80 hover:text-[var(--primary)]' : 'hover:text-blue-600'
                   }`}
                 >
                   Terms
@@ -339,7 +339,7 @@ export default function Footer() {
                 <a 
                   href="/privacy#cookies" 
                   className={`transition-colors ${
-                    theme === 'dark' ? 'text-[var(--muted-foreground)] hover:text-[var(--primary)]' : 'hover:text-blue-600'
+                    theme === 'dark' ? 'text-white/80 hover:text-[var(--primary)]' : 'hover:text-blue-600'
                   }`}
                 >
                   Cookies
@@ -348,7 +348,7 @@ export default function Footer() {
             </div>
             
             <div className={`flex items-center gap-2 text-sm transition-all duration-500 ${
-              theme === 'dark' ? 'text-[var(--muted-foreground)]' : 'text-slate-500'
+              theme === 'dark' ? 'text-white/80' : 'text-slate-500'
             }`}>
               <span>Made with</span>
               <Heart size={14} className={`${theme === 'dark' ? 'text-[var(--primary)]' : 'text-purple-500'} fill-current`} />

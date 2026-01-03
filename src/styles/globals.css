@@ -264,13 +264,13 @@
 }
 
 /* Ensure headings and base text are readable in dark mode */
-.dark h1, .dark h2, .dark h3, .dark h4, .dark h5, .dark h6 { 
+/* .dark h1, .dark h2, .dark h3, .dark h4, .dark h5, .dark h6 { 
   color: var(--foreground) !important; 
 }
 
 .dark p, .dark span, .dark li, .dark a { 
   color: var(--muted-foreground) !important; 
-}
+} */
 
 .dark a:hover { 
   color: var(--primary) !important; 

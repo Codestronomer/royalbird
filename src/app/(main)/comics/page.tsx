@@ -116,25 +116,50 @@ export default function ComicsPage() {
     <>
       <main className="min-h-screen bg-white overflow-hidden">
         {/* HERO SECTION (Same as Previous Version) */}
-        <section className="relative py-20 overflow-hidden min-h-[70vh] flex items-center">
+        <section className="relative py-20 overflow-hidden min-h-[80vh] flex items-center">
           <div className="absolute inset-0">
-            <div className="absolute inset-0 bg-cover bg-center bg-no-repeat" style={{ backgroundImage: 'url("https://velgg90lgs.ufs.sh/f/ymmBhW7qEDZCLHF0mkZYQ9joXds68g5cJSwp3CuRxOf74iNz")' }} />
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-900/80 via-purple-900/70 to-slate-900/90" />
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(255,255,255,0.1)_1px,transparent_1px)] bg-[length:20px_20px] opacity-10" />
+            <div 
+              className="absolute inset-0 bg-cover bg-center bg-no-repeat scale-105" 
+              style={{ backgroundImage: 'url("https://velgg90lgs.ufs.sh/f/ymmBhW7qEDZCLHF0mkZYQ9joXds68g5cJSwp3CuRxOf74iNz")' }} 
+            />
+            {/* Darkened the overlay slightly for better text contrast */}
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-950/90 via-purple-900/80 to-slate-950/90" />
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(255,255,255,0.15)_1px,transparent_2px)] bg-[length:24px_24px] opacity-20" />
           </div>
+
           <div className="relative z-10 container mx-auto px-4 text-center lg:text-left">
             <div className="max-w-6xl mx-auto">
-              <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-6 py-3 mb-8 animate-fade-in-up">
-                <Zap className="w-5 h-5 text-yellow-300" />
-                <span className="text-sm text-white font-semibold tracking-wider uppercase">Africa&apos;s Digital Comic Hub</span>
+              {/* Badge: Increased contrast and border visibility */}
+              <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-xl border border-white/30 rounded-full px-6 py-3 mb-10 animate-fade-in-up shadow-2xl">
+                <Zap className="w-5 h-5 text-yellow-400 fill-yellow-400" />
+                <span className="text-xs md:text-sm text-white font-bold tracking-[0.2em] uppercase">
+                  Africa&apos;s Digital Comic Hub
+                </span>
               </div>
-              <h1 className="text-7xl md:text-8xl lg:text-[10rem] font-black mb-8 leading-none">
-                <span className="bg-gradient-to-r from-blue-200 via-purple-200 to-pink-200 bg-clip-text text-transparent">COMIC</span><br />
-                <span className="bg-gradient-to-r from-white via-blue-100 to-purple-100 bg-clip-text text-transparent">LIBRARY</span>
+
+              {/* Heading: Used higher-stop gradients and drop shadows */}
+              <h1 className="text-7xl md:text-8xl lg:text-[11rem] font-black mb-8 leading-[0.85] tracking-tighter">
+                <span className="bg-gradient-to-r from-white via-blue-100 to-white bg-clip-text text-transparent drop-shadow-[0_5px_15px_rgba(0,0,0,0.3)]">
+                  COMIC
+                </span>
+                <br />
+                <span className="bg-gradient-to-r from-purple-100 via-white to-pink-100 bg-clip-text text-transparent drop-shadow-[0_5px_15px_rgba(0,0,0,0.3)]">
+                  LIBRARY
+                </span>
               </h1>
-              <p className="text-xl text-white/80 max-w-2xl leading-relaxed mb-12">Dive into cyberpunk futures and ancient myths. Discover stories that push the boundaries of imagination.</p>
-              <button className="group relative px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full font-semibold text-white overflow-hidden">
-                <span className="relative flex items-center gap-3">Explore Stories <ArrowRight className="w-5 h-5 group-hover:translate-x-2 transition-transform" /></span>
+
+              {/* Description: Switched from white/80 to gray-100 for crispness */}
+              <p className="text-md md:text-xl text-gray-100 max-w-2xl leading-relaxed mb-12 font-medium drop-shadow-md">
+                Dive into cyberpunk futures and ancient myths.  
+                <span className="text-blue-300 mt-2"> Discover stories that push the boundaries of imagination.</span>
+              </p>
+
+              {/* Button: More vibrant gradient and glow */}
+              <button className="group relative px-10 py-5 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-400 hover:to-purple-400 rounded-full font-bold text-white transition-all duration-300 shadow-[0_0_20px_rgba(124,58,237,0.4)] hover:shadow-[0_0_30px_rgba(124,58,237,0.6)]">
+                <span className="relative flex items-center gap-3 text-lg">
+                  Explore Stories 
+                  <ArrowRight className="w-6 h-6 group-hover:translate-x-2 transition-transform" />
+                </span>
               </button>
             </div>
           </div>

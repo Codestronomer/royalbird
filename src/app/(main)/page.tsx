@@ -104,7 +104,7 @@ export default function Home() {
         <div className="absolute inset-0">
           {/* Background Image */}
           <div 
-            className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-50 transition-all duration-500"
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-30 transition-all duration-500"
             style={{
               backgroundImage: theme === 'dark'
                 ? "url('https://velgg90lgs.ufs.sh/f/ymmBhW7qEDZCYZH8qO4opdWL2RExlqSG7OCMBwnDgkFtraAv')"
@@ -143,71 +143,67 @@ export default function Home() {
         <div className="relative z-20 container mx-auto px-4 text-center">
           <div className="max-w-5xl mx-auto">
             {/* Animated Badge */}
-            <div className={`inline-flex items-center gap-2 backdrop-blur-sm border rounded-full px-6 py-3 mb-8 shadow-lg animate-fade-in transition-all duration-500 ${
+            <div className={`inline-flex items-center gap-2 backdrop-blur-md border rounded-full px-6 py-3 mb-8 shadow-xl animate-fade-in transition-all duration-500 ${
               theme === 'dark' 
-                ? 'bg-gray-800/40 border-purple-700/30' 
-                : 'bg-white/80 border-blue-200'
+                ? 'bg-gray-900/60 border-purple-500/50' 
+                : 'bg-white border-blue-200'
             }`}>
               <div className={`w-2 h-2 rounded-full animate-pulse transition-all duration-500 ${
                 theme === 'dark' ? 'bg-green-400' : 'bg-green-500'
               }`} />
-              <span className={`text-sm font-medium transition-all duration-500 ${
-                theme === 'dark' ? 'text-green-300' : 'text-blue-700'
+              <span className={`text-sm font-bold tracking-wide transition-all duration-500 ${
+                theme === 'dark' ? 'text-white' : 'text-blue-800'
               }`}>BREACH Issue #2 out now!</span>
             </div>
 
             {/* Enhanced Main Heading */}
             <div className="relative mb-8">
-              <h1 className="text-7xl md:text-9xl font-black tracking-tight mb-4">
+              <h1 className="text-7xl md:text-9xl font-black tracking-tighter mb-4">
                 <span className={`bg-clip-text text-transparent relative transition-all duration-500 ${
                   theme === 'dark'
-                    ? 'bg-gradient-to-r from-gray-300 via-purple-400 to-pink-400'
-                    : 'bg-gradient-to-r from-gray-800 via-purple-700 to-pink-600'
+                    ? 'bg-gradient-to-r from-white via-purple-300 to-pink-400'
+                    : 'bg-gradient-to-r from-slate-900 via-purple-700 to-pink-600'
                 }`}>
                   ROYAL BIRD
-                  <div className={`absolute inset-0 bg-clip-text text-transparent blur-sm opacity-15 -z-10 transition-all duration-500 ${
+                  <div className={`absolute inset-0 bg-clip-text text-transparent blur-md opacity-30 -z-10 transition-all duration-500 ${
                     theme === 'dark'
-                      ? 'bg-gradient-to-r from-gray-300 via-purple-400 to-pink-400'
-                      : 'bg-gradient-to-r from-gray-800 via-purple-700 to-pink-600'
+                      ? 'bg-gradient-to-r from-white via-purple-400 to-pink-400'
+                      : 'bg-gradient-to-r from-slate-900 via-purple-700 to-pink-600'
                   }`}>
                     ROYAL BIRD
                   </div>
                 </span>
               </h1>
               <div className="relative">
-                <h2 className={`text-5xl md:text-7xl font-light mb-2 transition-all duration-500 ${
-                  theme === 'dark' ? 'text-gray-200' : 'text-slate-800'
+                <h2 className={`text-5xl md:text-7xl font-extralight mb-2 transition-all duration-500 ${
+                  theme === 'dark' ? 'text-white' : 'text-slate-900'
                 }`}>
                   Studios
                 </h2>
-                {/* Underline Effect */}
-                <div className={`absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-32 h-1 rounded-full transition-all duration-500 ${
-                  theme === 'dark'
-                    ? 'bg-gradient-to-r from-purple-500 to-pink-500'
-                    : 'bg-gradient-to-r from-purple-500 to-pink-500'
-                }`} />
+                {/* Underline Effect - More vibrant */}
+                <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-32 h-1.5 rounded-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 shadow-lg" />
               </div>
             </div>
 
-            <div className="space-y-6 mb-10">
+            <div className="space-y-8 mb-10">
               <div className="relative inline-block">
-                <p className={`text-3xl md:text-4xl font-light leading-tight transition-all duration-500 ${
-                  theme === 'dark' ? 'text-gray-300' : 'text-slate-800'
+                <p className={`text-3xl md:text-4xl font-normal leading-tight transition-all duration-500 ${
+                  theme === 'dark' ? 'text-white' : 'text-slate-900'
                 }`}>
                   Where{" "}
                   <span className="relative inline-block">
-                    <span className={`relative z-10 bg-clip-text text-transparent font-bold transition-all duration-500 ${
+                    <span className={`relative z-10 bg-clip-text text-transparent font-extrabold transition-all duration-500 ${
                       theme === 'dark'
-                        ? 'bg-gradient-to-r from-blue-400 to-purple-400'
+                        ? 'bg-gradient-to-r from-blue-300 to-purple-300'
                         : 'bg-gradient-to-r from-blue-600 to-purple-600'
                     }`}>
                       legends
                     </span>
                     <span
-                      className={`absolute bottom-0 left-0 w-full h-1 rounded-full transform -rotate-1 transition-all duration-500 ${
+                      className={`absolute bottom-1 left-0 w-full h-2 rounded-full transform -rotate-1 transition-all duration-500 ${
                         theme === 'dark'
-                          ? 'bg-gradient-to-r from-blue-500/40 to-purple-500/40'
-                          : 'bg-gradient-to-r from-blue-500/30 to-purple-500/30'
+                          ? 'bg-blue-500/30'
+                          : 'bg-blue-500/20'
                       }`}
                       aria-hidden="true"
                     />
@@ -216,26 +212,26 @@ export default function Home() {
                 </p>
               </div>
 
-              <div className="max-w-3xl mx-auto space-y-4">
-                <p className={`text-xl md:text-2xl leading-relaxed font-light text-center transition-all duration-500 ${
-                  theme === 'dark' ? 'text-gray-400' : 'text-slate-700'
+              <div className="max-w-3xl mx-auto space-y-6">
+                <p className={`text-xl md:text-2xl leading-relaxed font-normal text-center transition-all duration-500 ${
+                  theme === 'dark' ? 'text-white' : 'text-slate-800'
                 }`}>
                   Immerse yourself in breathtaking comics that push the boundaries of imagination.
                 </p>
                 
                 <div className="flex justify-center">
-                  <p className={`font-light text-center max-w-2xl leading-relaxed transition-all duration-500 ${
-                    theme === 'dark' ? 'text-gray-400' : 'text-slate-600'
+                  <p className={`text-lg font-normal text-center max-w-2xl leading-relaxed transition-all duration-500 ${
+                    theme === 'dark' ? 'text-white' : 'text-slate-700'
                   }`}>
-                    From <span className={`font-semibold transition-all duration-500 ${
-                      theme === 'dark' ? 'text-gray-300' : 'text-slate-800'
+                    From <span className={`font-bold transition-all duration-500 ${
+                      theme === 'dark' ? 'text-white' : 'text-slate-950'
                     }`}>timeless myths</span> to{" "}
-                    <span className={`font-semibold transition-all duration-500 ${
-                      theme === 'dark' ? 'text-gray-300' : 'text-slate-800'
+                    <span className={`font-bold transition-all duration-500 ${
+                      theme === 'dark' ? 'text-white' : 'text-slate-950'
                     }`}>fearless new heroes</span>. 
                     Discover stories that{" "}
-                    <span className={`font-semibold transition-all duration-500 ${
-                      theme === 'dark' ? 'text-gray-300' : 'text-slate-800'
+                    <span className={`font-bold underline decoration-purple-500/50 underline-offset-4 transition-all duration-500 ${
+                      theme === 'dark' ? 'text-white' : 'text-slate-950'
                     }`}>thrill, inspire, and captivate</span>
                   </p>
                 </div>
