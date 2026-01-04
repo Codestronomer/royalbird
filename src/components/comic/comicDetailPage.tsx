@@ -1,28 +1,28 @@
 'use client'
 
-import { useState, useEffect } from 'react';
-import Image from 'next/image';
+import { useState, useEffect } from 'react'
+import Image from 'next/image'
+import Link from 'next/link'
 import { 
   X, 
-  BookOpen, 
-  Star, 
-  Clock, 
+  ChevronLeft, 
+  ChevronRight, 
+  Play, 
   Heart, 
-  Bookmark,
-  ChevronLeft,
-  ChevronRight,
-  Users,
-  Eye,
+  Bookmark, 
+  Eye, 
+  Users, 
+  Star, 
+  BookOpen, 
+  Clock, 
   Calendar,
-  Play,
   Sparkles
-} from 'lucide-react';
-import { Button } from '~/components/ui/button';
-import { Badge } from '~/components/ui/badge';
-import { Progress } from '~/components/ui/progress';
-import ShareButtons from '~/components/blog/shareButtons';
-import type { Comic } from '~/types/comics';
-import Link from 'next/link';
+} from 'lucide-react'
+import { Button } from '~/components/ui/button'
+import { Badge } from '~/components/ui/badge'
+import ShareButtons from '~/components/blog/shareButtons'
+import { useTheme } from '~/hooks/useTheme'
+import type { ApiGenre, Comic } from '~/types/comics'
 
 interface ComicDetailModalProps {
   comic: Comic
@@ -46,6 +46,7 @@ export default function ComicDetailModal({
   const [isLiked, setIsLiked] = useState(false)
   const [isBookmarked, setIsBookmarked] = useState(false)
   const [readProgress, setReadProgress] = useState(0)
+  const { theme } = useTheme()
 
   // Close on escape key
   useEffect(() => {
@@ -76,22 +77,55 @@ export default function ComicDetailModal({
 
   if (!isOpen) return null
 
+  // Theme-aware colors
+  const bgColor = theme === 'dark' 
+    ? 'bg-[var(--background)]' 
+    : 'bg-white'
+  
+  const textColor = theme === 'dark' 
+    ? 'text-[var(--foreground)]' 
+    : 'text-slate-800'
+  
+  const textMutedColor = theme === 'dark' 
+    ? 'text-[var(--muted-foreground)]' 
+    : 'text-slate-600'
+  
+  const cardBgColor = theme === 'dark' 
+    ? 'bg-[var(--card)]' 
+    : 'bg-slate-100'
+  
+  const borderColor = theme === 'dark' 
+    ? 'border-[var(--border)]' 
+    : 'border-slate-200'
+  
+  const buttonHoverBg = theme === 'dark' 
+    ? 'hover:bg-[var(--card)]' 
+    : 'hover:bg-slate-100'
+  
+  const badgeOutline = theme === 'dark'
+    ? 'border-[var(--border)] bg-[var(--card)]'
+    : 'border-blue-200 bg-blue-50'
+  
+  const badgeSecondary = theme === 'dark'
+    ? 'bg-[var(--muted)] text-[var(--muted-foreground)] hover:bg-[var(--muted)]/80'
+    : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+
   return (
     <>
       {/* Backdrop */}
       <div 
-        className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 animate-in fade-in duration-300"
+        className={`fixed inset-0 ${theme === 'dark' ? 'bg-black/90' : 'bg-black/80'} backdrop-blur-sm z-50 animate-in fade-in duration-300`}
         onClick={onClose}
       />
       
       {/* Modal */}
       <div className="fixed inset-0 z-50 flex items-center justify-center p-2 overflow-y-auto">
-        <div className="relative w-full max-w-5xl max-h-[65vh] bg-white rounded-3xl overflow-y-auto shadow-2xl animate-in slide-in-from-bottom-8 duration-300">
+        <div className={`relative w-full max-w-5xl max-h-[65vh] ${bgColor} rounded-3xl overflow-y-auto shadow-2xl animate-in slide-in-from-bottom-8 duration-300 ${borderColor} border`}>
           
           {/* Close Button */}
           <button
             onClick={onClose}
-            className="absolute top-6 right-6 z-50 w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center text-slate-800 hover:bg-white hover:scale-110 transition-all duration-300 shadow-lg"
+            className={`absolute top-6 right-6 z-50 w-10 h-10 ${theme === 'dark' ? 'bg-[var(--card)]/90' : 'bg-white/90'} backdrop-blur-sm rounded-full flex items-center justify-center ${theme === 'dark' ? 'text-[var(--foreground)]' : 'text-slate-800'} hover:${theme === 'dark' ? 'bg-[var(--card)]' : 'bg-white'} hover:scale-110 transition-all duration-300 shadow-lg`}
             aria-label="Close"
           >
             <X className="w-5 h-5" />
@@ -103,7 +137,7 @@ export default function ComicDetailModal({
               {hasPrevious && (
                 <button
                   onClick={() => handleNavigation('prev')}
-                  className="absolute left-6 top-1/2 -translate-y-1/2 z-50 w-12 h-12 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center text-slate-800 hover:bg-white hover:scale-110 transition-all duration-300 shadow-lg"
+                  className={`absolute left-6 top-1/2 -translate-y-1/2 z-50 w-12 h-12 ${theme === 'dark' ? 'bg-[var(--card)]/90' : 'bg-white/90'} backdrop-blur-sm rounded-full flex items-center justify-center ${theme === 'dark' ? 'text-[var(--foreground)]' : 'text-slate-800'} hover:${theme === 'dark' ? 'bg-[var(--card)]' : 'bg-white'} hover:scale-110 transition-all duration-300 shadow-lg`}
                   aria-label="Previous comic"
                 >
                   <ChevronLeft className="w-5 h-5" />
@@ -113,7 +147,7 @@ export default function ComicDetailModal({
               {hasNext && (
                 <button
                   onClick={() => handleNavigation('next')}
-                  className="absolute right-6 top-1/2 -translate-y-1/2 z-50 w-12 h-12 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center text-slate-800 hover:bg-white hover:scale-110 transition-all duration-300 shadow-lg"
+                  className={`absolute right-6 top-1/2 -translate-y-1/2 z-50 w-12 h-12 ${theme === 'dark' ? 'bg-[var(--card)]/90' : 'bg-white/90'} backdrop-blur-sm rounded-full flex items-center justify-center ${theme === 'dark' ? 'text-[var(--foreground)]' : 'text-slate-800'} hover:${theme === 'dark' ? 'bg-[var(--card)]' : 'bg-white'} hover:scale-110 transition-all duration-300 shadow-lg`}
                   aria-label="Next comic"
                 >
                   <ChevronRight className="w-5 h-5" />
@@ -136,7 +170,7 @@ export default function ComicDetailModal({
                     sizes="(max-width: 1024px) 100vw, 50vw"
                     priority
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+                  <div className={`absolute inset-0 ${theme === 'dark' ? 'bg-black/70' : 'bg-black/60'} via-black/20 to-transparent`} />
                   <div className="absolute inset-0 bg-gradient-to-r from-blue-900/30 via-transparent to-purple-900/30" />
                   
                   {/* Status Badge */}
@@ -179,53 +213,60 @@ export default function ComicDetailModal({
                 <div className="p-5 lg:p-8 flex flex-col">
                   {/* Category & Rating */}
                   <div className="flex items-center gap-4 mb-4">
-                    <Badge variant="outline" className="text-blue-600 border-blue-200 bg-blue-50">
+                    <Badge variant="outline" className={`${badgeOutline} ${theme === 'dark' ? 'text-blue-400' : 'text-blue-600'}`}>
                       {comic?.genres[0]?.name}
                     </Badge>
                     <div className="flex items-center gap-1">
                       {[0, 1, 2, 3, 4].map((i) => (
                         <Star
                           key={i}
-                          className={`w-4 h-4 ${i < Math.floor(comic.rating ?? 0) ? 'fill-amber-400 text-amber-400' : 'text-slate-300'}`}
+                          className={`w-4 h-4 ${i < Math.floor(comic.rating ?? 0) 
+                            ? 'fill-amber-400 text-amber-400' 
+                            : theme === 'dark' 
+                              ? 'text-[var(--muted-foreground)]/50' 
+                              : 'text-slate-300'
+                          }`}
                         />
                       ))}
-                      <span className="ml-2 text-slate-600 font-semibold">{comic.rating}/5</span>
+                      <span className={`ml-2 ${theme === 'dark' ? 'text-[var(--muted-foreground)]' : 'text-slate-600'} font-semibold`}>
+                        {comic.rating}/5
+                      </span>
                     </div>
                   </div>
 
                   {/* Title */}
-                  <h1 className="text-4xl lg:text-5xl font-black text-slate-800 mb-3 leading-tight">
+                  <h1 className={`text-4xl lg:text-5xl font-black ${textColor} mb-3 leading-tight`}>
                     {comic.title}
                   </h1>
 
                   {/* Description */}
-                  <p className="text-lg text-slate-600 mb-6 leading-relaxed">
+                  <p className={`text-lg ${textMutedColor} mb-6 leading-relaxed`}>
                     {comic.description}
                   </p>
 
                   {/* Metadata Grid */}
                   <div className="grid grid-cols-2 gap-4 mb-6">
                     <div className="flex items-center gap-3">
-                      <BookOpen className="w-5 h-5 text-slate-400" />
+                      <BookOpen className={`w-5 h-5 ${theme === 'dark' ? 'text-[var(--muted-foreground)]' : 'text-slate-400'}`} />
                       <div>
-                        <div className="text-sm text-slate-500">Pages</div>
-                        <div className="font-semibold text-slate-800">{comic.totalPages}</div>
+                        <div className={`text-sm ${theme === 'dark' ? 'text-[var(--muted-foreground)]' : 'text-slate-500'}`}>Pages</div>
+                        <div className={`font-semibold ${textColor}`}>{comic.totalPages}</div>
                       </div>
                     </div>
                     
                     <div className="flex items-center gap-3">
-                      <Clock className="w-5 h-5 text-slate-400" />
+                      <Clock className={`w-5 h-5 ${theme === 'dark' ? 'text-[var(--muted-foreground)]' : 'text-slate-400'}`} />
                       <div>
-                        <div className="text-sm text-slate-500">Read Time</div>
-                        <div className="font-semibold text-slate-800">{comic.readTime}</div>
+                        <div className={`text-sm ${theme === 'dark' ? 'text-[var(--muted-foreground)]' : 'text-slate-500'}`}>Read Time</div>
+                        <div className={`font-semibold ${textColor}`}>{comic.readTime}</div>
                       </div>
                     </div>
                     
                     <div className="flex items-center gap-3">
-                      <Calendar className="w-5 h-5 text-slate-400" />
+                      <Calendar className={`w-5 h-5 ${theme === 'dark' ? 'text-[var(--muted-foreground)]' : 'text-slate-400'}`} />
                       <div>
-                        <div className="text-sm text-slate-500">Published</div>
-                        <div className="font-semibold text-slate-800">
+                        <div className={`text-sm ${theme === 'dark' ? 'text-[var(--muted-foreground)]' : 'text-slate-500'}`}>Published</div>
+                        <div className={`font-semibold ${textColor}`}>
                           {new Date(comic.publishedAt!).toLocaleDateString('en-US', {
                             month: 'short',
                             year: 'numeric'
@@ -235,15 +276,92 @@ export default function ComicDetailModal({
                     </div>
                     
                     <div className="flex items-center gap-3">
-                      <Users className="w-5 h-5 text-slate-400" />
+                      <Users className={`w-5 h-5 ${theme === 'dark' ? 'text-[var(--muted-foreground)]' : 'text-slate-400'}`} />
                       <div>
-                        <div className="text-sm text-slate-500">Readers</div>
-                        <div className="font-semibold text-slate-800">{comic.readers?.toLocaleString()}+</div>
+                        <div className={`text-sm ${theme === 'dark' ? 'text-[var(--muted-foreground)]' : 'text-slate-500'}`}>Readers</div>
+                        <div className={`font-semibold ${textColor}`}>{comic.readers?.toLocaleString()}+</div>
                       </div>
                     </div>
                   </div>
 
-                  {/* Creative Team */}
+                  {/* Tags */}
+                  <div className="mb-8 grid grid-cols-2 gap-8 space-between">
+                    <div>
+                      <h3 className={`text-lg font-bold ${textColor} mb-3`}>Genres & Tags</h3>
+                      <div className="flex flex-wrap gap-2">
+                        {comic.genres.map((genre: ApiGenre) => (
+                          <Badge
+                            key={genre.id ?? genre._id}
+                            variant="secondary"
+                            className={badgeSecondary}
+                          >
+                            #{genre.name}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <h3 className={`text-lg font-bold ${textColor} mb-3`}>Age rating</h3>
+                      {comic.ageRating && (
+                        <Badge className={theme === 'dark' 
+                          ? 'bg-amber-900/30 text-amber-400 border-amber-800/30' 
+                          : 'bg-amber-100 text-amber-800 hover:bg-amber-200'
+                        }>
+                          {comic.ageRating === 'ALL' ? 'All Ages' : comic.ageRating}
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex flex-col sm:flex-row gap-4 mt-auto">
+                    <Link href={`/comics/${comic.slug}`}>
+                      <Button
+                        size="lg"
+                        className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
+                      >
+                        <Play className="w-5 h-5 mr-2" />
+                        Read
+                      </Button>
+                    </Link>
+                    
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        className={`${theme === 'dark' ? 'border-[var(--border)] hover:bg-[var(--card)]' : 'border-slate-200 hover:bg-slate-100'} ${isLiked ? (theme === 'dark' ? 'text-red-400 border-red-400/30 bg-red-400/10' : 'text-red-500 border-red-200 bg-red-50') : ''}`}
+                        onClick={() => setIsLiked(!isLiked)}
+                      >
+                        <Heart className={`w-5 h-5 ${isLiked ? 'fill-current' : ''}`} />
+                      </Button>
+                      
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        className={`${theme === 'dark' ? 'border-[var(--border)] hover:bg-[var(--card)]' : 'border-slate-200 hover:bg-slate-100'} ${isBookmarked ? (theme === 'dark' ? 'text-blue-400 border-blue-400/30 bg-blue-400/10' : 'text-blue-500 border-blue-200 bg-blue-50') : ''}`}
+                        onClick={() => setIsBookmarked(!isBookmarked)}
+                      >
+                        <Bookmark className={`w-5 h-5 ${isBookmarked ? 'fill-current' : ''}`} />
+                      </Button>
+                      
+                      <ShareButtons
+                        url={`/comics/${comic.slug}`}
+                        title={comic.title}
+                        // theme={theme}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  )
+}
+
+{/* Creative Team */}
                     {/* <div className="mb-8">
                       <h3 className="text-lg font-bold text-slate-800 mb-3">Creative Team</h3>
                       <div className="flex flex-wrap gap-4">
@@ -263,80 +381,6 @@ export default function ComicDetailModal({
                         )}
                       </div>
                     </div> */}
-
-                  {/* Tags */}
-                  <div className="mb-8 grid grid-cols-2 gap-8 space-between">
-                    <div>
-                      <h3 className="text-lg font-bold text-slate-800 mb-3">Genres & Tags</h3>
-                      <div className="flex flex-wrap gap-2">
-                        {comic.genres.map((genre) => (
-                          <Badge
-                            key={genre.id || genre._id}
-                            variant="secondary"
-                            className="bg-slate-100 text-slate-700 hover:bg-slate-200"
-                          >
-                            #{genre.name}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-bold text-slate-800 mb-3">Age rating</h3>
-                      {comic.ageRating && (
-                          <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-200">
-                            {comic.ageRating === 'ALL' ? 'All Ages' : comic.ageRating}
-                          </Badge>
-                        )}
-                    </div>
-                  </div>
-
-                  {/* Action Buttons */}
-                  <div className="flex flex-col sm:flex-row gap-4 mt-auto">
-                    <Link href={`/comics/${comic.slug}`}>
-                      <Button
-                        size="lg"
-                        className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
-                        // onClick={handleStartReading}
-                      >
-                        <Play className="w-5 h-5 mr-2" />
-                        Read
-                      </Button>
-                    </Link>
-                    
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        className={`${isLiked ? 'text-red-500 border-red-200 bg-red-50' : ''}`}
-                        onClick={() => setIsLiked(!isLiked)}
-                      >
-                        <Heart className={`w-5 h-5 ${isLiked ? 'fill-current' : ''}`} />
-                      </Button>
-                      
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        className={`${isBookmarked ? 'text-blue-500 border-blue-200 bg-blue-50' : ''}`}
-                        onClick={() => setIsBookmarked(!isBookmarked)}
-                      >
-                        <Bookmark className={`w-5 h-5 ${isBookmarked ? 'fill-current' : ''}`} />
-                      </Button>
-                      
-                      <ShareButtons
-                        url={`/comics/${comic.slug}`}
-                        title={comic.title}
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </>
-  )
-}
 
 // : (
             //   /* Reading Mode */

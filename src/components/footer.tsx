@@ -252,7 +252,7 @@ export default function Footer() {
                 <Mail size={22} className={`transition-colors ${
                   theme === 'dark' ? 'text-[var(--primary)] group-hover:text-[var(--primary)]/80' : 'text-blue-500 group-hover:text-blue-600'
                 }`} />
-                <span className={`${theme === 'dark' ? 'text-white' : 'text-slate-600'}`}>hello@royalbirdstudios.com</span>
+                <span className={`${theme === 'dark' ? 'text-white' : 'text-slate-600'}`}>royalbirdstudios0@gmail.com</span>
               </div>
               <div className={`flex items-center gap-3 transition-colors cursor-pointer group ${
                 theme === 'dark' ? 'hover:text-[var(--primary)]' : 'hover:text-blue-600'
@@ -260,7 +260,7 @@ export default function Footer() {
                 <Phone size={16} className={`transition-colors ${
                   theme === 'dark' ? 'text-[var(--primary)] group-hover:text-[var(--primary)]/80' : 'text-blue-500 group-hover:text-blue-600'
                 }`} />
-                <span className={`${theme === 'dark' ? 'text-white' : 'text-slate-600'}`}>+234 (555) 123-4567</span>
+                <span className={`${theme === 'dark' ? 'text-white' : 'text-slate-600'}`}>+234 (0703) 821-3288</span>
               </div>
               <div className={`flex items-center gap-3 transition-colors cursor-pointer group ${
                 theme === 'dark' ? 'hover:text-[var(--primary)]' : 'hover:text-blue-600'
