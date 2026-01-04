@@ -18,7 +18,12 @@ import {
   Clock,
   Menu,
   ArrowDown,
-  ArrowRight
+  ArrowRight,
+  ChevronUp,
+  ChevronDown,
+  Smartphone,
+  Tablet,
+  Monitor
 } from 'lucide-react';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
@@ -58,7 +63,9 @@ const ZOOM_STEP = 0.25;
 const MIN_ZOOM = 0.5;
 const MAX_ZOOM = 3.0;
 const CONTROL_HIDE_DELAY = 3000;
-const TAP_ZONE_WIDTH = 0.33;
+const TAP_ZONE_WIDTH = 0.25; // Smaller tap zones for mobile
+const SWIPE_THRESHOLD = 50; // Minimum swipe distance in pixels
+const LONG_PRESS_DURATION = 500; // ms for long press to show controls
 
 export default function PdfComicReader({ 
   pdfUrl, 
@@ -82,6 +89,13 @@ export default function PdfComicReader({
   const [showReadingProgress, setShowReadingProgress] = useState<boolean>(true);
   const [bookmarks, setBookmarks] = useState<number[]>([]);
   const [readingTime, setReadingTime] = useState<number>(0);
+  const [isMobile, setIsMobile] = useState<boolean>(false);
+  const [isTablet, setIsTablet] = useState<boolean>(false);
+  
+  // Touch/swipe state
+  const [touchStart, setTouchStart] = useState<{ x: number; y: number; time: number } | null>(null);
+  const [touchEnd, setTouchEnd] = useState<{ x: number; y: number } | null>(null);
+  const [isLongPressing, setIsLongPressing] = useState<boolean>(false);
   
   // Refs
   const containerRef = useRef<HTMLDivElement>(null);
@@ -90,10 +104,25 @@ export default function PdfComicReader({
   const lastScrollPositionRef = useRef<number>(0);
   const scrollDebounceRef = useRef<NodeJS.Timeout | null>(null);
   const isScrollingProgrammaticallyRef = useRef<boolean>(false);
+  const longPressTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const touchMoveTimerRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // Detect mobile/tablet on mount
+  useEffect(() => {
+    const checkDevice = () => {
+      const width = window.innerWidth;
+      setIsMobile(width < 768);
+      setIsTablet(width >= 768 && width < 1024);
+    };
+    
+    checkDevice();
+    window.addEventListener('resize', checkDevice);
+    return () => window.removeEventListener('resize', checkDevice);
+  }, []);
   
   // Auto-hide controls with proper cleanup
   const resetControlTimeout = useCallback(() => {
-    if (showThumbnails || showSettings) {
+    if (showThumbnails || showSettings || isLongPressing) {
       setShowControls(true);
       if (controlTimeoutRef.current) {
         clearTimeout(controlTimeoutRef.current);
@@ -108,7 +137,27 @@ export default function PdfComicReader({
     controlTimeoutRef.current = setTimeout(() => {
       setShowControls(false);
     }, CONTROL_HIDE_DELAY);
-  }, [showThumbnails, showSettings]);
+  }, [showThumbnails, showSettings, isLongPressing]);
+  
+  // Calculate optimal zoom for mobile
+  const getOptimalZoom = useCallback(() => {
+    if (isMobile) {
+      if (viewMode === 'single') return 1.0;
+      if (viewMode === 'double') return 0.7;
+      return 0.8;
+    }
+    if (isTablet) {
+      if (viewMode === 'single') return 1.2;
+      if (viewMode === 'double') return 0.9;
+      return 1.0;
+    }
+    return 1.0;
+  }, [isMobile, isTablet, viewMode]);
+  
+  // Reset zoom when device or view mode changes
+  useEffect(() => {
+    setScale(getOptimalZoom());
+  }, [isMobile, isTablet, viewMode, getOptimalZoom]);
   
   // Calculate visible pages with proper memoization
   const visiblePages = useMemo(() => {
@@ -129,23 +178,23 @@ export default function PdfComicReader({
     // Continuous view - show from current page to end for proper scrolling
     const pages: number[] = [];
     const startPage = currentPage;
-    // Show more pages to ensure smooth scrolling
-    const endPage = Math.min(numPages, currentPage + 10);
+    const pagesToLoad = isMobile ? 5 : 10; // Load fewer pages on mobile for performance
+    const endPage = Math.min(numPages, currentPage + pagesToLoad);
     for (let i = startPage; i <= endPage; i++) {
       pages.push(i);
     }
     return pages;
-  }, [currentPage, numPages, viewMode]);
+  }, [currentPage, numPages, viewMode, isMobile]);
   
   // Calculate page width for continuous mode to prevent white space on right
   const pageWidth = useMemo(() => {
     if (viewMode === 'continuous' && containerRef.current) {
       const containerWidth = containerRef.current.clientWidth;
-      // Ensure pages are centered and properly scaled
-      return Math.min(containerWidth * 0.9, 1000) * scale;
+      const optimalWidth = isMobile ? containerWidth * 0.95 : containerWidth * 0.9;
+      return Math.min(optimalWidth, 1000) * scale;
     }
     return undefined;
-  }, [viewMode, scale]);
+  }, [viewMode, scale, isMobile]);
   
   // Reading progress calculation
   const readingProgress = useMemo(() => 
@@ -250,9 +299,9 @@ export default function PdfComicReader({
   }, [resetControlTimeout]);
   
   const handleZoomReset = useCallback(() => {
-    setScale(1.0);
+    setScale(getOptimalZoom());
     resetControlTimeout();
-  }, [resetControlTimeout]);
+  }, [getOptimalZoom, resetControlTimeout]);
   
   // Rotation
   const handleRotate = useCallback(() => {
@@ -307,8 +356,132 @@ export default function PdfComicReader({
     resetControlTimeout();
   }, [currentPage, comic?.id, resetControlTimeout]);
   
-  // Tap navigation
-  const handleTapNavigation = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+  // ====================
+  // TOUCH HANDLERS
+  // ====================
+  
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    const touch = e.touches[0];
+    const startTime = Date.now();
+    const startPos = { x: touch.clientX, y: touch.clientY, time: startTime };
+    setTouchStart(startPos);
+    setTouchEnd(null);
+    
+    // Start long press timer
+    longPressTimerRef.current = setTimeout(() => {
+      setIsLongPressing(true);
+      setShowControls(true);
+    }, LONG_PRESS_DURATION);
+    
+    resetControlTimeout();
+  }, [resetControlTimeout]);
+  
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    // Cancel long press if user moves finger
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+    
+    const touch = e.touches[0];
+    setTouchEnd({ x: touch?.clientX, y: touch?.clientY });
+    
+    // Prevent scrolling while swiping horizontally for page navigation
+    if (touch && touchStart) {
+      const deltaX = touch.clientX - touchStart.x;
+      const deltaY = touch.clientY - touchStart.y;
+      
+      // If horizontal swipe is dominant, prevent vertical scroll
+      if (Math.abs(deltaX) > Math.abs(deltaY) * 1.5) {
+        e.preventDefault();
+      }
+    }
+    
+    resetControlTimeout();
+  }, [touchStart, resetControlTimeout]);
+  
+  const handleTouchEnd = useCallback(() => {
+    // Clear long press timer
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+    
+    setIsLongPressing(false);
+    
+    // Handle swipe gesture
+    if (touchStart && touchEnd) {
+      const deltaX = touchEnd.x - touchStart.x;
+      const deltaY = touchEnd.y - touchStart.y;
+      const deltaTime = Date.now() - touchStart.time;
+      const velocity = Math.abs(deltaX) / deltaTime;
+      
+      // Check for horizontal swipe (page navigation)
+      if (Math.abs(deltaX) > SWIPE_THRESHOLD && Math.abs(deltaX) > Math.abs(deltaY)) {
+        e.preventDefault();
+        if (deltaX > 0) {
+          // Swipe right -> previous page
+          goToPreviousPage();
+        } else {
+          // Swipe left -> next page
+          goToNextPage();
+        }
+      } 
+      // Check for vertical swipe (hide/show controls)
+      else if (Math.abs(deltaY) > SWIPE_THRESHOLD && Math.abs(deltaY) > Math.abs(deltaX)) {
+        if (deltaY > 50) {
+          // Swipe down -> show controls
+          setShowControls(true);
+          resetControlTimeout();
+        } else if (deltaY < -50 && !showThumbnails && !showSettings) {
+          // Swipe up -> hide controls
+          setShowControls(false);
+        }
+      } 
+      // Handle tap (if not a swipe and not long press)
+      else if (deltaTime < 300 && Math.abs(deltaX) < 10 && Math.abs(deltaY) < 10) {
+        handleTap(touchStart.x, touchStart.y);
+      }
+    }
+    
+    setTouchStart(null);
+    setTouchEnd(null);
+  }, [touchStart, touchEnd, goToPreviousPage, goToNextPage, showThumbnails, showSettings, resetControlTimeout]);
+  
+  // Handle tap for mobile
+  const handleTap = useCallback((clientX: number, clientY: number) => {
+    if (showThumbnails || showSettings || !containerRef.current) return;
+    
+    const rect = containerRef.current.getBoundingClientRect();
+    const clickX = clientX - rect.left;
+    const clickY = clientY - rect.top;
+    const tapZoneWidth = rect.width * TAP_ZONE_WIDTH;
+    const centerZoneWidth = rect.width * 0.5;
+    
+    // Top zone for showing controls
+    if (clickY < 50) {
+      setShowControls(true);
+      resetControlTimeout();
+      return;
+    }
+    
+    // Left zone for previous page
+    if (clickX < tapZoneWidth) {
+      goToPreviousPage();
+    } 
+    // Right zone for next page
+    else if (clickX > rect.width - tapZoneWidth) {
+      goToNextPage();
+    }
+    // Center zone for toggling controls
+    else if (clickX > tapZoneWidth && clickX < rect.width - tapZoneWidth) {
+      setShowControls(prev => !prev);
+      resetControlTimeout();
+    }
+  }, [goToPreviousPage, goToNextPage, showThumbnails, showSettings, resetControlTimeout]);
+  
+  // Handle mouse click for desktop
+  const handleClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     if (showThumbnails || showSettings) return;
     
     const target = e.target as HTMLElement;
@@ -326,16 +499,26 @@ export default function PdfComicReader({
     if (!rect) return;
     
     const clickX = e.clientX - rect.left;
+    const clickY = e.clientY - rect.top;
     const tapZoneWidth = rect.width * TAP_ZONE_WIDTH;
+    const centerZoneWidth = rect.width * 0.5;
     
+    // Left zone for previous page
     if (clickX < tapZoneWidth) {
       goToPreviousPage();
-    } else if (clickX > rect.width - tapZoneWidth) {
+    } 
+    // Right zone for next page
+    else if (clickX > rect.width - tapZoneWidth) {
       goToNextPage();
     }
-  }, [goToPreviousPage, goToNextPage, showThumbnails, showSettings]);
+    // Center zone for toggling controls
+    else if (clickX > tapZoneWidth && clickX < rect.width - tapZoneWidth) {
+      setShowControls(prev => !prev);
+      resetControlTimeout();
+    }
+  }, [goToPreviousPage, goToNextPage, showThumbnails, showSettings, resetControlTimeout]);
   
-  // Improved scroll handler for continuous mode
+  // Improved scroll handler for mobile
   const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
     if (!viewerRef.current || isScrollingProgrammaticallyRef.current) return;
     
@@ -357,28 +540,16 @@ export default function PdfComicReader({
         // Calculate how far we've scrolled as a percentage
         const scrollPercentage = (currentScrollPos + clientHeight) / scrollHeight;
         
-        // If we're near the bottom (95%), load next pages
-        if (scrollPercentage > 0.95 && currentPage < numPages) {
-          // Instead of immediately jumping to next page, we'll load more pages
-          // This creates a true infinite scroll experience
-          if (currentPage + 10 > numPages) {
-            // If we're near the end, just go to next page
-            goToNextPage();
-          }
-          // Otherwise, the visiblePages memo will handle loading more pages
-          // since it shows currentPage + 10 pages
+        // If we're near the bottom, load next pages
+        const threshold = isMobile ? 0.85 : 0.95; // Earlier threshold on mobile
+        if (scrollPercentage > threshold && currentPage < numPages) {
+          goToNextPage();
         }
-        
-        // Also check if we're scrolling up to previous content
-        if (scrollPercentage < 0.1 && currentPage > 1) {
-          // Load previous pages if needed
-          goToPage(Math.max(1, currentPage - 1));
-        }
-      }, 200); // Increased debounce for smoother scrolling
+      }, 250);
     }
     
     resetControlTimeout();
-  }, [scrollDirection, viewMode, currentPage, numPages, goToNextPage, goToPage, resetControlTimeout]);
+  }, [scrollDirection, viewMode, currentPage, numPages, goToNextPage, resetControlTimeout, isMobile]);
   
   // Track reading time
   useEffect(() => {
@@ -404,14 +575,6 @@ export default function PdfComicReader({
       localStorage.setItem(`comic-${comic.id}-progress`, JSON.stringify(progress));
     }
   }, [currentPage, comic?.id, numPages, readingTime, readingProgress]);
-  
-  // Reset zoom when changing view modes
-  useEffect(() => {
-    if (viewMode === 'continuous') {
-      // Reset to optimal zoom for continuous reading
-      setScale(1.0);
-    }
-  }, [viewMode]);
   
   // Keyboard navigation
   useEffect(() => {
@@ -517,6 +680,9 @@ export default function PdfComicReader({
       if (scrollDebounceRef.current) {
         clearTimeout(scrollDebounceRef.current);
       }
+      if (longPressTimerRef.current) {
+        clearTimeout(longPressTimerRef.current);
+      }
     };
   }, [resetControlTimeout]);
   
@@ -535,140 +701,191 @@ export default function PdfComicReader({
     window.history.back();
   }, []);
   
+  // Mobile-specific button size
+  const buttonSize = isMobile ? "p-3" : "p-2";
+  const iconSize = isMobile ? "w-6 h-6" : "w-5 h-5";
+  
   return (
     <div 
       ref={containerRef}
       className="fixed inset-0 z-50 bg-black flex flex-col select-none"
-      onClick={handleTapNavigation}
+      onClick={handleClick}
       onMouseMove={resetControlTimeout}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
     >
-      {/* Top Bar */}
+      {/* Top Bar - Mobile Optimized */}
       <div className={`
         bg-gradient-to-b from-black/95 via-black/90 to-transparent 
         backdrop-blur-xl border-b border-gray-800/50
-        transition-all duration-300 px-4 py-3
+        transition-all duration-300 px-3 sm:px-4 py-2 sm:py-3
         ${showControls ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-full pointer-events-none'}
       `}>
         <div className="flex items-center justify-between max-w-7xl mx-auto">
           {/* Left: Title */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4">
             <button
               onClick={handleClose}
-              className="p-2 hover:bg-gray-800/50 rounded-lg transition text-gray-300 hover:text-white"
+              className={`${buttonSize} hover:bg-gray-800/50 rounded-lg transition text-gray-300 hover:text-white`}
               aria-label="Close"
             >
-              <X className="w-5 h-5" />
+              <X className={iconSize} />
             </button>
             
-            <div className="max-w-xs">
-              <h1 className="text-white font-semibold text-lg truncate">
+            <div className="max-w-[140px] sm:max-w-xs truncate">
+              <h1 className="text-white font-semibold text-sm sm:text-lg truncate">
                 {comic?.title ?? 'Comic Reader'}
               </h1>
-              <div className="flex items-center gap-3 text-gray-400 text-sm">
-                {comic?.publisher && <span className="truncate">{comic.publisher}</span>}
-                {comic?.issueNumber && <span>• Issue #{comic.issueNumber}</span>}
+              <div className="flex items-center gap-1 sm:gap-3 text-gray-400 text-xs sm:text-sm">
+                {comic?.issueNumber && (
+                  <span className="truncate">#{comic.issueNumber}</span>
+                )}
                 {showReadingProgress && estimatedRemainingTime && (
-                  <span className="flex items-center gap-1 whitespace-nowrap">
+                  <span className="hidden sm:flex items-center gap-1 whitespace-nowrap">
                     <Clock className="w-3 h-3 flex-shrink-0" />
-                    {formatTime(estimatedRemainingTime)} left
+                    {formatTime(estimatedRemainingTime)}
                   </span>
                 )}
               </div>
             </div>
           </div>
 
-          {/* Center: Navigation */}
-          <div className="flex items-center gap-4">
+          {/* Center: Navigation - Simplified on mobile */}
+          <div className="flex items-center gap-2 sm:gap-4">
             <button
               onClick={goToPreviousPage}
               disabled={currentPage <= 1}
-              className="p-2 hover:bg-gray-800/50 rounded-lg transition text-white disabled:opacity-30 disabled:cursor-not-allowed"
+              className={`${buttonSize} hover:bg-gray-800/50 rounded-lg transition text-white disabled:opacity-30 disabled:cursor-not-allowed`}
               aria-label="Previous page"
             >
-              <ChevronLeft className="w-5 h-5" />
+              <ChevronLeft className={iconSize} />
             </button>
             
-            <div className="flex items-center gap-2 bg-gray-900/50 backdrop-blur rounded-lg px-3 py-1">
-              <input
-                type="number"
-                value={currentPage}
-                onChange={(e) => goToPage(parseInt(e.target.value) || 1)}
-                className="w-12 bg-transparent text-white text-center text-sm focus:outline-none"
-                min={1}
-                max={numPages}
-              />
-              <span className="text-gray-400 text-sm">/ {numPages}</span>
+            <div className="flex items-center gap-2 bg-gray-900/50 backdrop-blur rounded-lg px-2 sm:px-3 py-1">
+              <span className="text-white text-xs sm:text-sm font-medium">
+                {currentPage}
+              </span>
+              <span className="text-gray-400 text-xs sm:text-sm">/ {numPages}</span>
             </div>
 
             <button
               onClick={goToNextPage}
               disabled={currentPage >= numPages}
-              className="p-2 hover:bg-gray-800/50 rounded-lg transition text-white disabled:opacity-30 disabled:cursor-not-allowed"
+              className={`${buttonSize} hover:bg-gray-800/50 rounded-lg transition text-white disabled:opacity-30 disabled:cursor-not-allowed`}
               aria-label="Next page"
             >
-              <ChevronRight className="w-5 h-5" />
+              <ChevronRight className={iconSize} />
             </button>
           </div>
 
-          {/* Right: Controls */}
-          <div className="flex items-center gap-2">
-            <button
-              onClick={toggleBookmark}
-              className={`p-2 hover:bg-gray-800/50 rounded-lg transition ${
-                bookmarks.includes(currentPage) 
-                  ? 'text-yellow-500' 
-                  : 'text-gray-300 hover:text-white'
-              }`}
-              aria-label="Bookmark"
-            >
-              <Bookmark 
-                className="w-5 h-5" 
-                fill={bookmarks.includes(currentPage) ? 'currentColor' : 'none'} 
-              />
-            </button>
+          {/* Right: Controls - Simplified on mobile */}
+          <div className="flex items-center gap-1 sm:gap-2">
+            {!isMobile && (
+              <>
+                <button
+                  onClick={toggleBookmark}
+                  className={`${buttonSize} hover:bg-gray-800/50 rounded-lg transition ${
+                    bookmarks.includes(currentPage) 
+                      ? 'text-yellow-500' 
+                      : 'text-gray-300 hover:text-white'
+                  }`}
+                  aria-label="Bookmark"
+                >
+                  <Bookmark 
+                    className={iconSize} 
+                    fill={bookmarks.includes(currentPage) ? 'currentColor' : 'none'} 
+                  />
+                </button>
 
-            <button
-              onClick={() => setShowThumbnails(!showThumbnails)}
-              className={`p-2 hover:bg-gray-800/50 rounded-lg transition ${
-                showThumbnails ? 'text-blue-500' : 'text-gray-300 hover:text-white'
-              }`}
-              aria-label="Thumbnails"
-            >
-              <Grid className="w-5 h-5" />
-            </button>
+                <button
+                  onClick={() => setShowThumbnails(!showThumbnails)}
+                  className={`${buttonSize} hover:bg-gray-800/50 rounded-lg transition ${
+                    showThumbnails ? 'text-blue-500' : 'text-gray-300 hover:text-white'
+                  }`}
+                  aria-label="Thumbnails"
+                >
+                  <Grid className={iconSize} />
+                </button>
+              </>
+            )}
 
             <button
               onClick={() => setShowSettings(!showSettings)}
-              className={`p-2 hover:bg-gray-800/50 rounded-lg transition ${
+              className={`${buttonSize} hover:bg-gray-800/50 rounded-lg transition ${
                 showSettings ? 'text-blue-500' : 'text-gray-300 hover:text-white'
               }`}
               aria-label="Settings"
             >
-              <Settings className="w-5 h-5" />
+              <Settings className={iconSize} />
             </button>
 
-            <div className="w-px h-6 bg-gray-700 mx-1" />
+            {!isMobile && (
+              <>
+                <div className="w-px h-6 bg-gray-700 mx-1" />
 
-            <button
-              onClick={toggleViewMode}
-              className="p-2 hover:bg-gray-800/50 rounded-lg transition text-gray-300 hover:text-white"
-              aria-label="View mode"
-            >
-              {viewMode === 'single' && <BookOpen className="w-5 h-5" />}
-              {viewMode === 'double' && <Columns className="w-5 h-5" />}
-              {viewMode === 'continuous' && <Menu className="w-5 h-5" />}
-            </button>
-
-            <button
-              onClick={() => setScrollDirection(prev => prev === 'vertical' ? 'horizontal' : 'vertical')}
-              className="p-2 hover:bg-gray-800/50 rounded-lg transition text-gray-300 hover:text-white"
-              aria-label="Scroll direction"
-            >
-              {scrollDirection === 'vertical' ? <ArrowDown className="w-5 h-5" /> : <ArrowRight className="w-5 h-5" />}
-            </button>
+                <button
+                  onClick={toggleViewMode}
+                  className={`${buttonSize} hover:bg-gray-800/50 rounded-lg transition text-gray-300 hover:text-white`}
+                  aria-label="View mode"
+                >
+                  {viewMode === 'single' && <BookOpen className={iconSize} />}
+                  {viewMode === 'double' && <Columns className={iconSize} />}
+                  {viewMode === 'continuous' && <Menu className={iconSize} />}
+                </button>
+              </>
+            )}
           </div>
         </div>
       </div>
+
+      {/* Mobile Quick Controls - Floating */}
+      {isMobile && showControls && (
+        <div className="fixed bottom-20 right-4 flex flex-col gap-2 z-40">
+          <button
+            onClick={toggleBookmark}
+            className={`p-3 bg-black/70 backdrop-blur-md rounded-full shadow-lg transition ${
+              bookmarks.includes(currentPage) 
+                ? 'text-yellow-500 ring-2 ring-yellow-500/50' 
+                : 'text-white hover:bg-black/80'
+            }`}
+            aria-label="Bookmark"
+          >
+            <Bookmark 
+              className="w-6 h-6" 
+              fill={bookmarks.includes(currentPage) ? 'currentColor' : 'none'} 
+            />
+          </button>
+          
+          <button
+            onClick={() => setShowThumbnails(!showThumbnails)}
+            className={`p-3 bg-black/70 backdrop-blur-md rounded-full shadow-lg transition ${
+              showThumbnails 
+                ? 'text-blue-500 ring-2 ring-blue-500/50' 
+                : 'text-white hover:bg-black/80'
+            }`}
+            aria-label="Thumbnails"
+          >
+            <Grid className="w-6 h-6" />
+          </button>
+        </div>
+      )}
+
+      {/* Swipe Indicators */}
+      {!showControls && !showThumbnails && !showSettings && isMobile && (
+        <div className="fixed inset-0 pointer-events-none z-30">
+          <div className="absolute left-0 top-0 bottom-0 w-16 flex items-center justify-center">
+            <div className="bg-black/30 backdrop-blur-sm rounded-full p-2 animate-pulse">
+              <ChevronLeft className="w-8 h-8 text-white/60" />
+            </div>
+          </div>
+          <div className="absolute right-0 top-0 bottom-0 w-16 flex items-center justify-center">
+            <div className="bg-black/30 backdrop-blur-sm rounded-full p-2 animate-pulse">
+              <ChevronRight className="w-8 h-8 text-white/60" />
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Main Viewer */}
       <div 
@@ -677,8 +894,8 @@ export default function PdfComicReader({
         onScroll={handleScroll}
       >
         <div className={`
-          ${viewMode === 'continuous' ? 'py-8' : 'flex items-center justify-center min-h-full py-12'}
-          ${viewMode === 'double' ? 'gap-4' : ''}
+          ${viewMode === 'continuous' ? 'py-4 sm:py-8' : 'flex items-center justify-center min-h-full py-8 sm:py-12'}
+          ${viewMode === 'double' ? 'gap-2 sm:gap-4' : ''}
         `}>
           <Document
             file={pdfUrl}
@@ -687,19 +904,19 @@ export default function PdfComicReader({
             loading={
               <div className="flex items-center justify-center h-full">
                 <div className="text-center">
-                  <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-                  <p className="text-gray-400">Loading comic...</p>
+                  <div className="w-12 h-12 sm:w-16 sm:h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+                  <p className="text-gray-400 text-sm sm:text-base">Loading comic...</p>
                 </div>
               </div>
             }
             error={
               <div className="flex items-center justify-center h-full">
-                <div className="text-center max-w-md p-8">
-                  <p className="text-red-400 mb-4 text-lg">Failed to load comic</p>
-                  <p className="text-gray-400 mb-6">The PDF file could not be loaded. Please check the URL or try again later.</p>
+                <div className="text-center max-w-md p-4 sm:p-8">
+                  <p className="text-red-400 mb-4 text-base sm:text-lg">Failed to load comic</p>
+                  <p className="text-gray-400 mb-6 text-sm sm:text-base">The PDF file could not be loaded. Please check the URL or try again later.</p>
                   <button
                     onClick={handleClose}
-                    className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm sm:text-base"
                   >
                     Close
                   </button>
@@ -711,7 +928,7 @@ export default function PdfComicReader({
               <div 
                 key={pageNumber}
                 className={`
-                  ${viewMode === 'continuous' ? 'mb-8 last:mb-0 flex justify-center' : ''}
+                  ${viewMode === 'continuous' ? 'mb-4 sm:mb-8 last:mb-0 flex justify-center' : ''}
                   relative
                 `}
               >
@@ -721,27 +938,28 @@ export default function PdfComicReader({
                   scale={viewMode !== 'continuous' ? scale : undefined}
                   rotate={rotation}
                   loading={
-                    <div className="w-full h-96 flex items-center justify-center bg-gray-900/50 rounded-lg">
-                      <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                    <div className="w-full h-64 sm:h-96 flex items-center justify-center bg-gray-900/50 rounded-lg">
+                      <div className="w-10 h-10 sm:w-12 sm:h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
                     </div>
                   }
                   className={`
                     shadow-2xl transition-all duration-300 rounded-lg
                     ${viewMode === 'continuous' ? 'mx-auto' : ''}
                     ${bookmarks.includes(pageNumber) ? 'ring-2 ring-yellow-500 ring-offset-2 ring-offset-gray-900' : ''}
+                    ${isMobile ? 'max-w-full' : ''}
                   `}
                   renderTextLayer={true}
                   renderAnnotationLayer={true}
                 />
                 
-                <div className="absolute bottom-4 right-4 bg-black/70 text-white text-sm px-3 py-1 rounded-full backdrop-blur-sm">
+                <div className="absolute bottom-2 sm:bottom-4 right-2 sm:right-4 bg-black/70 text-white text-xs sm:text-sm px-2 sm:px-3 py-1 rounded-full backdrop-blur-sm">
                   {pageNumber}
                 </div>
                 
                 {bookmarks.includes(pageNumber) && (
-                  <div className="absolute top-4 right-4 bg-yellow-500/90 text-black text-xs px-2 py-1 rounded-full flex items-center gap-1">
+                  <div className="absolute top-2 sm:top-4 right-2 sm:right-4 bg-yellow-500/90 text-black text-xs px-2 py-1 rounded-full flex items-center gap-1">
                     <Bookmark className="w-3 h-3" fill="currentColor" />
-                    Bookmarked
+                    <span className="hidden sm:inline">Bookmarked</span>
                   </div>
                 )}
               </div>
@@ -750,22 +968,26 @@ export default function PdfComicReader({
         </div>
       </div>
 
-      {/* Thumbnails Panel */}
+      {/* Thumbnails Panel - Mobile Responsive */}
       {showThumbnails && (
-        <div className="absolute left-0 top-0 bottom-0 w-64 bg-black/95 backdrop-blur-xl border-r border-gray-800/50 overflow-y-auto z-50">
-          <div className="p-4">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-white font-semibold">Pages</h3>
+        <div className={`
+          absolute inset-0 sm:left-0 sm:top-0 sm:bottom-0 sm:w-64 
+          bg-black/95 backdrop-blur-xl border-r border-gray-800/50 
+          overflow-y-auto z-50
+        `}>
+          <div className="p-3 sm:p-4">
+            <div className="flex items-center justify-between mb-3 sm:mb-4">
+              <h3 className="text-white font-semibold text-base sm:text-lg">Pages</h3>
               <button 
                 onClick={() => setShowThumbnails(false)}
-                className="p-1 hover:bg-gray-800/50 rounded transition"
+                className="p-1 sm:p-2 hover:bg-gray-800/50 rounded transition"
                 aria-label="Close thumbnails"
               >
-                <X className="w-4 h-4 text-gray-400" />
+                <X className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
               </button>
             </div>
             
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-3 sm:grid-cols-2 gap-2 sm:gap-3">
               {Array.from({ length: numPages }, (_, i) => i + 1).map((pageNum) => (
                 <button
                   key={pageNum}
@@ -781,11 +1003,11 @@ export default function PdfComicReader({
                   aria-label={`Go to page ${pageNum}`}
                 >
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-gray-400 text-sm">{pageNum}</span>
+                    <span className="text-gray-400 text-xs sm:text-sm">{pageNum}</span>
                   </div>
                   {bookmarks.includes(pageNum) && (
                     <div className="absolute top-1 right-1">
-                      <Bookmark className="w-4 h-4 text-yellow-500" fill="currentColor" />
+                      <Bookmark className="w-3 h-3 sm:w-4 sm:h-4 text-yellow-500" fill="currentColor" />
                     </div>
                   )}
                 </button>
@@ -795,33 +1017,47 @@ export default function PdfComicReader({
         </div>
       )}
 
-      {/* Settings Panel */}
+      {/* Settings Panel - Mobile Responsive */}
       {showSettings && (
-        <div className="absolute right-0 top-0 bottom-0 w-80 bg-black/95 backdrop-blur-xl border-l border-gray-800/50 overflow-y-auto z-50">
-          <div className="p-4">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-white font-semibold">Settings</h3>
+        <div className={`
+          absolute inset-0 sm:right-0 sm:top-0 sm:bottom-0 sm:w-80 
+          bg-black/95 backdrop-blur-xl border-l border-gray-800/50 
+          overflow-y-auto z-50
+        `}>
+          <div className="p-3 sm:p-4">
+            <div className="flex items-center justify-between mb-3 sm:mb-4">
+              <h3 className="text-white font-semibold text-base sm:text-lg">Settings</h3>
               <button 
                 onClick={() => setShowSettings(false)}
-                className="p-1 hover:bg-gray-800/50 rounded transition"
+                className="p-1 sm:p-2 hover:bg-gray-800/50 rounded transition"
                 aria-label="Close settings"
               >
-                <X className="w-4 h-4 text-gray-400" />
+                <X className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
               </button>
             </div>
             
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
+              {/* Device Indicator */}
+              <div className="flex items-center gap-2 p-2 bg-gray-800/30 rounded-lg">
+                {isMobile && <Smartphone className="w-4 h-4 text-blue-400" />}
+                {isTablet && <Tablet className="w-4 h-4 text-blue-400" />}
+                {!isMobile && !isTablet && <Monitor className="w-4 h-4 text-blue-400" />}
+                <span className="text-sm text-gray-300">
+                  {isMobile ? 'Mobile' : isTablet ? 'Tablet' : 'Desktop'} View
+                </span>
+              </div>
+
               {/* Zoom */}
               <div>
-                <h4 className="text-gray-300 text-sm font-medium mb-3">Zoom</h4>
-                <div className="flex items-center gap-3">
+                <h4 className="text-gray-300 text-sm font-medium mb-2 sm:mb-3">Zoom</h4>
+                <div className="flex items-center gap-2 sm:gap-3">
                   <button
                     onClick={handleZoomOut}
                     disabled={scale <= MIN_ZOOM}
-                    className="p-2 bg-gray-800/50 rounded-lg text-gray-300 hover:text-white disabled:opacity-30"
+                    className="p-2 sm:p-3 bg-gray-800/50 rounded-lg text-gray-300 hover:text-white disabled:opacity-30"
                     aria-label="Zoom out"
                   >
-                    <ZoomOut className="w-5 h-5" />
+                    <ZoomOut className="w-4 h-4 sm:w-5 sm:h-5" />
                   </button>
                   
                   <div className="flex-1">
@@ -839,10 +1075,10 @@ export default function PdfComicReader({
                   <button
                     onClick={handleZoomIn}
                     disabled={scale >= MAX_ZOOM}
-                    className="p-2 bg-gray-800/50 rounded-lg text-gray-300 hover:text-white disabled:opacity-30"
+                    className="p-2 sm:p-3 bg-gray-800/50 rounded-lg text-gray-300 hover:text-white disabled:opacity-30"
                     aria-label="Zoom in"
                   >
-                    <ZoomIn className="w-5 h-5" />
+                    <ZoomIn className="w-4 h-4 sm:w-5 sm:h-5" />
                   </button>
                 </div>
                 <div className="flex justify-between mt-2">
@@ -858,22 +1094,27 @@ export default function PdfComicReader({
 
               {/* View Mode Settings */}
               <div>
-                <h4 className="text-gray-300 text-sm font-medium mb-3">View Mode</h4>
+                <h4 className="text-gray-300 text-sm font-medium mb-2 sm:mb-3">View Mode</h4>
                 <div className="grid grid-cols-1 gap-2">
                   {(['single', 'double', 'continuous'] as ViewMode[]).map((mode) => (
                     <button
                       key={mode}
                       onClick={() => setViewMode(mode)}
-                      className={`flex items-center justify-between p-3 rounded-lg border transition-all ${
+                      className={`flex items-center justify-between p-2 sm:p-3 rounded-lg border transition-all ${
                         viewMode === mode 
                           ? 'bg-blue-600/20 border-blue-500 text-white' 
                           : 'bg-gray-800/30 border-gray-700 text-gray-400 hover:bg-gray-800/50'
                       }`}
                     >
-                      <span className="capitalize">{mode} Page</span>
-                      {mode === 'single' && <BookOpen className="w-4 h-4" />}
-                      {mode === 'double' && <Columns className="w-4 h-4" />}
-                      {mode === 'continuous' && <Menu className="w-4 h-4" />}
+                      <div className="flex items-center gap-2">
+                        {mode === 'single' && <BookOpen className="w-4 h-4" />}
+                        {mode === 'double' && <Columns className="w-4 h-4" />}
+                        {mode === 'continuous' && <Menu className="w-4 h-4" />}
+                        <span className="capitalize text-sm sm:text-base">{mode} Page</span>
+                      </div>
+                      {viewMode === mode && (
+                        <div className="w-2 h-2 bg-blue-500 rounded-full" />
+                      )}
                     </button>
                   ))}
                 </div>
@@ -881,10 +1122,10 @@ export default function PdfComicReader({
 
               {/* Display Settings */}
               <div>
-                <h4 className="text-gray-300 text-sm font-medium mb-3">Display</h4>
-                <div className="space-y-3">
-                  <label className="flex items-center justify-between cursor-pointer group">
-                    <span className="text-gray-400 group-hover:text-gray-300 transition">Show Progress Bar</span>
+                <h4 className="text-gray-300 text-sm font-medium mb-2 sm:mb-3">Display</h4>
+                <div className="space-y-2 sm:space-y-3">
+                  <label className="flex items-center justify-between cursor-pointer group p-2 hover:bg-gray-800/30 rounded-lg">
+                    <span className="text-gray-400 group-hover:text-gray-300 transition text-sm sm:text-base">Show Progress Bar</span>
                     <input 
                       type="checkbox" 
                       checked={showReadingProgress}
@@ -894,14 +1135,14 @@ export default function PdfComicReader({
                   </label>
                   <button
                     onClick={toggleFullscreen}
-                    className="w-full flex items-center justify-between p-3 bg-gray-800/30 border border-gray-700 rounded-lg text-gray-300 hover:bg-gray-800/50 transition"
+                    className="w-full flex items-center justify-between p-2 sm:p-3 bg-gray-800/30 border border-gray-700 rounded-lg text-gray-300 hover:bg-gray-800/50 transition text-sm sm:text-base"
                   >
                     <span>{isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}</span>
                     {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
                   </button>
                   <button
                     onClick={handleRotate}
-                    className="w-full flex items-center justify-between p-3 bg-gray-800/30 border border-gray-700 rounded-lg text-gray-300 hover:bg-gray-800/50 transition"
+                    className="w-full flex items-center justify-between p-2 sm:p-3 bg-gray-800/30 border border-gray-700 rounded-lg text-gray-300 hover:bg-gray-800/50 transition text-sm sm:text-base"
                   >
                     <span>Rotate Page</span>
                     <RotateCw className="w-4 h-4" />
@@ -913,14 +1154,14 @@ export default function PdfComicReader({
         </div>
       )}
 
-      {/* Bottom Progress Bar */}
+      {/* Bottom Progress Bar - Mobile Optimized */}
       <div className={`
         fixed bottom-0 left-0 right-0 z-40
         transition-all duration-300
         ${showControls ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0 pointer-events-none'}
       `}>
         {/* Progress Rail */}
-        <div className="h-1 w-full bg-gray-800/50">
+        <div className="h-1 sm:h-2 w-full bg-gray-800/50">
           <div 
             className="h-full bg-blue-600 transition-all duration-300 shadow-[0_0_10px_rgba(37,99,235,0.5)]"
             style={{ width: `${readingProgress}%` }}
@@ -928,40 +1169,48 @@ export default function PdfComicReader({
         </div>
 
         {/* Info Bar */}
-        <div className="bg-black/90 backdrop-blur-xl border-t border-gray-800/50 px-6 py-3">
+        <div className="bg-black/90 backdrop-blur-xl border-t border-gray-800/50 px-3 sm:px-6 py-2 sm:py-3">
           <div className="max-w-7xl mx-auto flex items-center justify-between">
-            <div className="flex items-center gap-6 text-sm text-gray-400">
-              <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3 sm:gap-6 text-xs sm:text-sm text-gray-400">
+              <div className="flex items-center gap-1 sm:gap-2">
                 <span className="text-white font-medium">{Math.round(readingProgress)}%</span>
-                <span>completed</span>
+                <span className="hidden sm:inline">completed</span>
               </div>
               {readingTime > 0 && (
-                <div className="flex items-center gap-2">
-                  <Clock className="w-4 h-4" />
-                  <span>{formatTime(readingTime)} reading</span>
+                <div className="flex items-center gap-1 sm:gap-2">
+                  <Clock className="w-3 h-3 sm:w-4 sm:h-4" />
+                  <span className="hidden sm:inline">{formatTime(readingTime)} reading</span>
+                  <span className="sm:hidden">{formatTime(readingTime)}</span>
                 </div>
               )}
             </div>
 
-            <div className="flex items-center gap-4">
-               {bookmarks.length > 0 && (
-                 <div className="flex items-center -space-x-1">
-                   {bookmarks.slice(-3).map((page) => (
-                     <button
-                        key={page}
-                        onClick={() => goToPage(page)}
-                        className="w-6 h-6 rounded-full bg-yellow-500 border-2 border-black flex items-center justify-center text-[10px] text-black font-bold hover:scale-110 transition"
-                        title={`Bookmark at page ${page}`}
-                     >
-                       {page}
-                     </button>
-                   ))}
-                 </div>
-               )}
-            </div>
+            {bookmarks.length > 0 && (
+              <div className="flex items-center -space-x-1 sm:-space-x-2">
+                {bookmarks.slice(-2).map((page) => (
+                  <button
+                    key={page}
+                    onClick={() => goToPage(page)}
+                    className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-yellow-500 border-2 border-black flex items-center justify-center text-[10px] sm:text-xs text-black font-bold hover:scale-110 transition"
+                    title={`Bookmark at page ${page}`}
+                  >
+                    {page}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>
+
+      {/* Mobile Swipe Hint */}
+      {isMobile && !showControls && !showThumbnails && !showSettings && (
+        <div className="absolute bottom-4 left-0 right-0 flex justify-center z-30 animate-bounce">
+          <div className="bg-black/70 backdrop-blur-sm text-white text-xs px-3 py-1 rounded-full">
+            Swipe left/right to navigate • Tap to show controls
+          </div>
+        </div>
+      )}
     </div>
   );
 }
