@@ -361,94 +361,47 @@ export default function PdfComicReader({
   // ====================
   
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
-    const touch = e.touches[0];
-    const startTime = Date.now();
-    const startPos = { x: touch.clientX, y: touch.clientY, time: startTime };
-    setTouchStart(startPos);
-    setTouchEnd(null);
-    
-    // Start long press timer
-    longPressTimerRef.current = setTimeout(() => {
-      setIsLongPressing(true);
-      setShowControls(true);
-    }, LONG_PRESS_DURATION);
-    
-    resetControlTimeout();
-  }, [resetControlTimeout]);
+  const touch = e.touches[0];
+  if (!touch) return; // Guard against undefined touch
+
+  const startTime = Date.now();
+  const startPos = { x: touch.clientX, y: touch.clientY, time: startTime };
+  setTouchStart(startPos);
+  setTouchEnd(null);
   
-  const handleTouchMove = useCallback((e: React.TouchEvent) => {
-    // Cancel long press if user moves finger
-    if (longPressTimerRef.current) {
-      clearTimeout(longPressTimerRef.current);
-      longPressTimerRef.current = null;
-    }
-    
-    const touch = e.touches[0];
-    setTouchEnd({ x: touch?.clientX, y: touch?.clientY });
-    
-    // Prevent scrolling while swiping horizontally for page navigation
-    if (touch && touchStart) {
-      const deltaX = touch.clientX - touchStart.x;
-      const deltaY = touch.clientY - touchStart.y;
-      
-      // If horizontal swipe is dominant, prevent vertical scroll
-      if (Math.abs(deltaX) > Math.abs(deltaY) * 1.5) {
-        e.preventDefault();
-      }
-    }
-    
-    resetControlTimeout();
-  }, [touchStart, resetControlTimeout]);
+  longPressTimerRef.current = setTimeout(() => {
+    setIsLongPressing(true);
+    setShowControls(true);
+  }, 500); // Replaced LONG_PRESS_DURATION constant for safety
   
-  const handleTouchEnd = useCallback(() => {
-    // Clear long press timer
-    if (longPressTimerRef.current) {
-      clearTimeout(longPressTimerRef.current);
-      longPressTimerRef.current = null;
-    }
-    
-    setIsLongPressing(false);
-    
-    // Handle swipe gesture
-    if (touchStart && touchEnd) {
-      const deltaX = touchEnd.x - touchStart.x;
-      const deltaY = touchEnd.y - touchStart.y;
-      const deltaTime = Date.now() - touchStart.time;
-      const velocity = Math.abs(deltaX) / deltaTime;
-      
-      // Check for horizontal swipe (page navigation)
-      if (Math.abs(deltaX) > SWIPE_THRESHOLD && Math.abs(deltaX) > Math.abs(deltaY)) {
-        e.preventDefault();
-        if (deltaX > 0) {
-          // Swipe right -> previous page
-          goToPreviousPage();
-        } else {
-          // Swipe left -> next page
-          goToNextPage();
-        }
-      } 
-      // Check for vertical swipe (hide/show controls)
-      else if (Math.abs(deltaY) > SWIPE_THRESHOLD && Math.abs(deltaY) > Math.abs(deltaX)) {
-        if (deltaY > 50) {
-          // Swipe down -> show controls
-          setShowControls(true);
-          resetControlTimeout();
-        } else if (deltaY < -50 && !showThumbnails && !showSettings) {
-          // Swipe up -> hide controls
-          setShowControls(false);
-        }
-      } 
-      // Handle tap (if not a swipe and not long press)
-      else if (deltaTime < 300 && Math.abs(deltaX) < 10 && Math.abs(deltaY) < 10) {
-        handleTap(touchStart.x, touchStart.y);
-      }
-    }
-    
-    setTouchStart(null);
-    setTouchEnd(null);
-  }, [touchStart, touchEnd, goToPreviousPage, goToNextPage, showThumbnails, showSettings, resetControlTimeout]);
+  resetControlTimeout();
+}, [resetControlTimeout]);
+
+const handleTouchMove = useCallback((e: React.TouchEvent) => {
+  if (longPressTimerRef.current) {
+    clearTimeout(longPressTimerRef.current);
+    longPressTimerRef.current = null;
+  }
   
-  // Handle tap for mobile
+  const touch = e.touches[0];
+  if (!touch) return; // Guard against undefined touch
+
+  setTouchEnd({ x: touch.clientX, y: touch.clientY });
+  
+  if (touchStart) {
+    const deltaX = touch.clientX - touchStart.x;
+    const deltaY = touch.clientY - touchStart.y;
+    
+    // If horizontal swipe is dominant, prevent vertical scroll
+    if (Math.abs(deltaX) > Math.abs(deltaY) * 1.5) {
+      if (e.cancelable) e.preventDefault();
+    }
+  }
+  
+  resetControlTimeout();
+}, [touchStart, resetControlTimeout]);
+
+// Handle tap for mobile
   const handleTap = useCallback((clientX: number, clientY: number) => {
     if (showThumbnails || showSettings || !containerRef.current) return;
     
@@ -479,6 +432,50 @@ export default function PdfComicReader({
       resetControlTimeout();
     }
   }, [goToPreviousPage, goToNextPage, showThumbnails, showSettings, resetControlTimeout]);
+  
+
+const handleTouchEnd = useCallback((e: React.TouchEvent) => {
+  if (longPressTimerRef.current) {
+    clearTimeout(longPressTimerRef.current);
+    longPressTimerRef.current = null;
+  }
+  
+  setIsLongPressing(false);
+  
+  if (touchStart && touchEnd) {
+    const deltaX = touchEnd.x - touchStart.x;
+    const deltaY = touchEnd.y - touchStart.y;
+    const deltaTime = Date.now() - touchStart.time;
+    
+    const SWIPE_THRESHOLD = 50; // Ensure this is defined
+
+    if (Math.abs(deltaX) > SWIPE_THRESHOLD && Math.abs(deltaX) > Math.abs(deltaY)) {
+      // Horizontal swipe
+      if (deltaX > 0) {
+        goToPreviousPage();
+      } else {
+        goToNextPage();
+      }
+    } 
+    else if (Math.abs(deltaY) > SWIPE_THRESHOLD && Math.abs(deltaY) > Math.abs(deltaX)) {
+      // Vertical swipe logic
+      if (deltaY > 50) {
+        setShowControls(true);
+      } else if (deltaY < -50 && !showThumbnails && !showSettings) {
+        setShowControls(false);
+      }
+    } 
+  } else if (touchStart && !touchEnd) {
+    // If there was a start but no move, it's a tap
+    const deltaTime = Date.now() - touchStart.time;
+    if (deltaTime < 300) {
+      handleTap(touchStart.x, touchStart.y);
+    }
+  }
+  
+  setTouchStart(null);
+  setTouchEnd(null);
+}, [touchStart, touchEnd, goToPreviousPage, goToNextPage, showThumbnails, showSettings, handleTap]);
   
   // Handle mouse click for desktop
   const handleClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
