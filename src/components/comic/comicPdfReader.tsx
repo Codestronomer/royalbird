@@ -58,14 +58,20 @@ interface ProgressData {
   percentComplete: number;
 }
 
+
 // Constants
 const ZOOM_STEP = 0.25;
 const MIN_ZOOM = 0.5;
 const MAX_ZOOM = 3.0;
 const CONTROL_HIDE_DELAY = 3000;
-const TAP_ZONE_WIDTH = 0.25; // Smaller tap zones for mobile
-const SWIPE_THRESHOLD = 50; // Minimum swipe distance in pixels
-const LONG_PRESS_DURATION = 500; // ms for long press to show controls
+const TAP_ZONE_WIDTH = 0.25;
+const SWIPE_THRESHOLD = 50;
+const LONG_PRESS_DURATION = 500;
+
+// Configuration for page loading
+const PAGE_LOAD_CHUNK_SIZE = 10; // Load pages in chunks of 10
+const PRELOAD_PAGES = 5; // Preload pages ahead of current position
+const DEBOUNCE_SCROLL_TIME = 150;
 
 export default function PdfComicReader({ 
   pdfUrl, 
@@ -92,6 +98,14 @@ export default function PdfComicReader({
   const [isMobile, setIsMobile] = useState<boolean>(false);
   const [isTablet, setIsTablet] = useState<boolean>(false);
   
+  // Page loading state
+  const [loadedPages, setLoadedPages] = useState<Set<number>>(new Set([initialPage]));
+  const [isLoadingMorePages, setIsLoadingMorePages] = useState<boolean>(false);
+  const [visiblePageRange, setVisiblePageRange] = useState<{ start: number; end: number }>({
+    start: initialPage,
+    end: initialPage + PRELOAD_PAGES
+  });
+  
   // Touch/swipe state
   const [touchStart, setTouchStart] = useState<{ x: number; y: number; time: number } | null>(null);
   const [touchEnd, setTouchEnd] = useState<{ x: number; y: number } | null>(null);
@@ -100,12 +114,14 @@ export default function PdfComicReader({
   // Refs
   const containerRef = useRef<HTMLDivElement>(null);
   const viewerRef = useRef<HTMLDivElement>(null);
+  const pageRefs = useRef<Map<number, HTMLDivElement>>(new Map());
   const controlTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const lastScrollPositionRef = useRef<number>(0);
   const scrollDebounceRef = useRef<NodeJS.Timeout | null>(null);
   const isScrollingProgrammaticallyRef = useRef<boolean>(false);
   const longPressTimerRef = useRef<NodeJS.Timeout | null>(null);
   const touchMoveTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const scrollObserverRef = useRef<IntersectionObserver | null>(null);
   
   // Detect mobile/tablet on mount
   useEffect(() => {
@@ -159,7 +175,25 @@ export default function PdfComicReader({
     setScale(getOptimalZoom());
   }, [isMobile, isTablet, viewMode, getOptimalZoom]);
   
-  // Calculate visible pages with proper memoization
+  // Load more pages when needed
+  const loadMorePages = useCallback((startPage: number) => {
+    if (!numPages || isLoadingMorePages) return;
+    
+    setIsLoadingMorePages(true);
+    const endPage = Math.min(numPages, startPage + PAGE_LOAD_CHUNK_SIZE);
+    
+    // Simulate loading delay for better UX
+    setTimeout(() => {
+      const newLoaded = new Set(loadedPages);
+      for (let i = startPage; i <= endPage; i++) {
+        newLoaded.add(i);
+      }
+      setLoadedPages(newLoaded);
+      setIsLoadingMorePages(false);
+    }, 300);
+  }, [numPages, loadedPages, isLoadingMorePages]);
+  
+  // Calculate which pages should be visible based on current view
   const visiblePages = useMemo(() => {
     if (!numPages) return [];
     
@@ -175,18 +209,19 @@ export default function PdfComicReader({
       return pages;
     }
     
-    // Continuous view - show from current page to end for proper scrolling
+    // Continuous view - load pages in current range plus buffer
     const pages: number[] = [];
-    const startPage = currentPage;
-    const pagesToLoad = isMobile ? 5 : 10; // Load fewer pages on mobile for performance
-    const endPage = Math.min(numPages, currentPage + pagesToLoad);
+    const startPage = Math.max(1, visiblePageRange.start);
+    const endPage = Math.min(numPages, visiblePageRange.end);
+    
     for (let i = startPage; i <= endPage; i++) {
       pages.push(i);
     }
+    
     return pages;
-  }, [currentPage, numPages, viewMode, isMobile]);
+  }, [numPages, currentPage, viewMode, visiblePageRange]);
   
-  // Calculate page width for continuous mode to prevent white space on right
+  // Calculate page width for continuous mode
   const pageWidth = useMemo(() => {
     if (viewMode === 'continuous' && containerRef.current) {
       const containerWidth = containerRef.current.clientWidth;
@@ -195,6 +230,90 @@ export default function PdfComicReader({
     }
     return undefined;
   }, [viewMode, scale, isMobile]);
+  
+  // Setup Intersection Observer for scroll detection
+  useEffect(() => {
+    if (viewMode !== 'continuous' || !viewerRef.current) return;
+    
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const pageElement = entry.target as HTMLDivElement;
+            const pageNumber = parseInt(pageElement.dataset.pageNumber ?? '1');
+            
+            if (pageNumber !== currentPage) {
+              setCurrentPage(pageNumber);
+              onPageChange?.(pageNumber);
+            }
+            
+            // Check if we need to load more pages ahead
+            if (pageNumber + PRELOAD_PAGES > visiblePageRange.end && pageNumber < numPages) {
+              const newEnd = Math.min(numPages, pageNumber + PRELOAD_PAGES + PAGE_LOAD_CHUNK_SIZE);
+              setVisiblePageRange(prev => ({
+                start: Math.max(1, pageNumber - PRELOAD_PAGES),
+                end: newEnd
+              }));
+              
+              // Load more pages if needed
+              if (newEnd > visiblePageRange.end) {
+                loadMorePages(visiblePageRange.end + 1);
+              }
+            }
+            
+            // Check if we need to load pages behind
+            if (pageNumber - PRELOAD_PAGES < visiblePageRange.start && pageNumber > 1) {
+              const newStart = Math.max(1, pageNumber - PRELOAD_PAGES - PAGE_LOAD_CHUNK_SIZE);
+              setVisiblePageRange(prev => ({
+                start: newStart,
+                end: Math.min(numPages, pageNumber + PRELOAD_PAGES)
+              }));
+              
+              // Load more pages if needed
+              if (newStart < visiblePageRange.start) {
+                loadMorePages(newStart);
+              }
+            }
+          }
+        });
+      },
+      {
+        root: viewerRef.current,
+        threshold: 0.5,
+        rootMargin: '0px 0px -100px 0px'
+      }
+    );
+    
+    scrollObserverRef.current = observer;
+    
+    // Cleanup
+    return () => {
+      if (scrollObserverRef.current) {
+        scrollObserverRef.current.disconnect();
+      }
+    };
+  }, [viewMode, currentPage, numPages, visiblePageRange, loadMorePages, onPageChange]);
+  
+  // Observe page elements when they're rendered
+  useEffect(() => {
+    if (!scrollObserverRef.current || viewMode !== 'continuous') return;
+    
+    pageRefs.current.forEach((ref, pageNumber) => {
+      if (ref && scrollObserverRef.current) {
+        scrollObserverRef.current.observe(ref);
+      }
+    });
+    
+    return () => {
+      if (scrollObserverRef.current) {
+        pageRefs.current.forEach((ref) => {
+          if (ref) {
+            scrollObserverRef.current?.unobserve(ref);
+          }
+        });
+      }
+    };
+  }, [visiblePages, viewMode]);
   
   // Reading progress calculation
   const readingProgress = useMemo(() => 
@@ -217,8 +336,22 @@ export default function PdfComicReader({
   }, []);
   
   // Document load handler
-  const onDocumentLoadSuccess = useCallback(({ numPages }: { numPages: number }) => {
-    setNumPages(numPages);
+  const onDocumentLoadSuccess = useCallback(({ numPages: totalPages }: { numPages: number }) => {
+    setNumPages(totalPages);
+    
+    // Initial load of pages
+    const initialChunk = Math.min(totalPages, initialPage + PAGE_LOAD_CHUNK_SIZE);
+    const initialLoaded = new Set<number>();
+    for (let i = 1; i <= initialChunk; i++) {
+      initialLoaded.add(i);
+    }
+    setLoadedPages(initialLoaded);
+    
+    // Set initial visible range
+    setVisiblePageRange({
+      start: Math.max(1, initialPage - PRELOAD_PAGES),
+      end: Math.min(totalPages, initialPage + PRELOAD_PAGES + PAGE_LOAD_CHUNK_SIZE)
+    });
     
     // Load saved bookmarks
     if (comic?.id) {
@@ -233,7 +366,7 @@ export default function PdfComicReader({
         const savedProgress = localStorage.getItem(`comic-${comic.id}-progress`);
         if (savedProgress) {
           const progress = JSON.parse(savedProgress) as ProgressData;
-          if (progress.page > 0 && progress.page <= numPages) {
+          if (progress.page > 0 && progress.page <= totalPages) {
             setCurrentPage(progress.page);
             setReadingTime(progress.readingTime ?? 0);
           }
@@ -242,7 +375,7 @@ export default function PdfComicReader({
         console.error('Failed to load saved data:', e);
       }
     }
-  }, [comic?.id]);
+  }, [comic?.id, initialPage]);
   
   // Document load error handler
   const onDocumentLoadError = useCallback((error: Error) => {
@@ -258,13 +391,17 @@ export default function PdfComicReader({
       setCurrentPage(newPage);
       resetControlTimeout();
       
-      // Reset scroll position for continuous mode
       if (viewMode === 'continuous' && viewerRef.current) {
+        // Scroll to the target page
         isScrollingProgrammaticallyRef.current = true;
-        viewerRef.current.scrollTop = 0;
+        const pageElement = pageRefs.current.get(newPage);
+        if (pageElement) {
+          pageElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+        
         setTimeout(() => {
           isScrollingProgrammaticallyRef.current = false;
-        }, 100);
+        }, 500);
       }
       
       onPageChange?.(newPage);
@@ -311,17 +448,23 @@ export default function PdfComicReader({
   
   // View mode toggle
   const toggleViewMode = useCallback(() => {
-    setViewMode(prev => {
-      if (prev === 'single') return 'double';
-      if (prev === 'double') return 'continuous';
-      return 'single';
-    });
-    // Reset scroll when changing view modes
-    if (viewerRef.current) {
+    const newMode = viewMode === 'single' ? 'double' : viewMode === 'double' ? 'continuous' : 'single';
+    setViewMode(newMode);
+    
+    if (newMode === 'continuous' && viewerRef.current) {
+      // Reset scroll when changing to continuous mode
       viewerRef.current.scrollTop = 0;
+      
+      // Load initial range for continuous mode
+      if (numPages) {
+        const startRange = Math.max(1, currentPage - PRELOAD_PAGES);
+        const endRange = Math.min(numPages, currentPage + PRELOAD_PAGES + PAGE_LOAD_CHUNK_SIZE);
+        setVisiblePageRange({ start: startRange, end: endRange });
+      }
     }
+    
     resetControlTimeout();
-  }, [resetControlTimeout]);
+  }, [viewMode, currentPage, numPages, resetControlTimeout]);
   
   // Fullscreen
   const toggleFullscreen = useCallback(async () => {
@@ -356,197 +499,12 @@ export default function PdfComicReader({
     resetControlTimeout();
   }, [currentPage, comic?.id, resetControlTimeout]);
   
-  // ====================
-  // TOUCH HANDLERS
-  // ====================
-  
-  const handleTouchStart = useCallback((e: React.TouchEvent) => {
-  const touch = e.touches[0];
-  if (!touch) return; // Guard against undefined touch
-
-  const startTime = Date.now();
-  const startPos = { x: touch.clientX, y: touch.clientY, time: startTime };
-  setTouchStart(startPos);
-  setTouchEnd(null);
-  
-  longPressTimerRef.current = setTimeout(() => {
-    setIsLongPressing(true);
-    setShowControls(true);
-  }, 500); // Replaced LONG_PRESS_DURATION constant for safety
-  
-  resetControlTimeout();
-}, [resetControlTimeout]);
-
-const handleTouchMove = useCallback((e: React.TouchEvent) => {
-  if (longPressTimerRef.current) {
-    clearTimeout(longPressTimerRef.current);
-    longPressTimerRef.current = null;
-  }
-  
-  const touch = e.touches[0];
-  if (!touch) return; // Guard against undefined touch
-
-  setTouchEnd({ x: touch.clientX, y: touch.clientY });
-  
-  if (touchStart) {
-    const deltaX = touch.clientX - touchStart.x;
-    const deltaY = touch.clientY - touchStart.y;
-    
-    // If horizontal swipe is dominant, prevent vertical scroll
-    if (Math.abs(deltaX) > Math.abs(deltaY) * 1.5) {
-      if (e.cancelable) e.preventDefault();
-    }
-  }
-  
-  resetControlTimeout();
-}, [touchStart, resetControlTimeout]);
-
-// Handle tap for mobile
-  const handleTap = useCallback((clientX: number, clientY: number) => {
-    if (showThumbnails || showSettings || !containerRef.current) return;
-    
-    const rect = containerRef.current.getBoundingClientRect();
-    const clickX = clientX - rect.left;
-    const clickY = clientY - rect.top;
-    const tapZoneWidth = rect.width * TAP_ZONE_WIDTH;
-    const centerZoneWidth = rect.width * 0.5;
-    
-    // Top zone for showing controls
-    if (clickY < 50) {
-      setShowControls(true);
-      resetControlTimeout();
-      return;
-    }
-    
-    // Left zone for previous page
-    if (clickX < tapZoneWidth) {
-      goToPreviousPage();
-    } 
-    // Right zone for next page
-    else if (clickX > rect.width - tapZoneWidth) {
-      goToNextPage();
-    }
-    // Center zone for toggling controls
-    else if (clickX > tapZoneWidth && clickX < rect.width - tapZoneWidth) {
-      setShowControls(prev => !prev);
-      resetControlTimeout();
-    }
-  }, [goToPreviousPage, goToNextPage, showThumbnails, showSettings, resetControlTimeout]);
-  
-
-const handleTouchEnd = useCallback((e: React.TouchEvent) => {
-  if (longPressTimerRef.current) {
-    clearTimeout(longPressTimerRef.current);
-    longPressTimerRef.current = null;
-  }
-  
-  setIsLongPressing(false);
-  
-  if (touchStart && touchEnd) {
-    const deltaX = touchEnd.x - touchStart.x;
-    const deltaY = touchEnd.y - touchStart.y;
-    const deltaTime = Date.now() - touchStart.time;
-    
-    const SWIPE_THRESHOLD = 50; // Ensure this is defined
-
-    if (Math.abs(deltaX) > SWIPE_THRESHOLD && Math.abs(deltaX) > Math.abs(deltaY)) {
-      // Horizontal swipe
-      if (deltaX > 0) {
-        goToPreviousPage();
-      } else {
-        goToNextPage();
-      }
-    } 
-    else if (Math.abs(deltaY) > SWIPE_THRESHOLD && Math.abs(deltaY) > Math.abs(deltaX)) {
-      // Vertical swipe logic
-      if (deltaY > 50) {
-        setShowControls(true);
-      } else if (deltaY < -50 && !showThumbnails && !showSettings) {
-        setShowControls(false);
-      }
-    } 
-  } else if (touchStart && !touchEnd) {
-    // If there was a start but no move, it's a tap
-    const deltaTime = Date.now() - touchStart.time;
-    if (deltaTime < 300) {
-      handleTap(touchStart.x, touchStart.y);
-    }
-  }
-  
-  setTouchStart(null);
-  setTouchEnd(null);
-}, [touchStart, touchEnd, goToPreviousPage, goToNextPage, showThumbnails, showSettings, handleTap]);
-  
-  // Handle mouse click for desktop
-  const handleClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-    if (showThumbnails || showSettings) return;
-    
-    const target = e.target as HTMLElement;
-    if (
-      target.closest('button') || 
-      target.closest('input') || 
-      target.closest('select') || 
-      target.closest('textarea') ||
-      target.closest('.react-pdf__Page')
-    ) {
-      return;
-    }
-    
-    const rect = containerRef.current?.getBoundingClientRect();
-    if (!rect) return;
-    
-    const clickX = e.clientX - rect.left;
-    const clickY = e.clientY - rect.top;
-    const tapZoneWidth = rect.width * TAP_ZONE_WIDTH;
-    const centerZoneWidth = rect.width * 0.5;
-    
-    // Left zone for previous page
-    if (clickX < tapZoneWidth) {
-      goToPreviousPage();
-    } 
-    // Right zone for next page
-    else if (clickX > rect.width - tapZoneWidth) {
-      goToNextPage();
-    }
-    // Center zone for toggling controls
-    else if (clickX > tapZoneWidth && clickX < rect.width - tapZoneWidth) {
-      setShowControls(prev => !prev);
-      resetControlTimeout();
-    }
-  }, [goToPreviousPage, goToNextPage, showThumbnails, showSettings, resetControlTimeout]);
-  
-  // Improved scroll handler for mobile
-  const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
-    if (!viewerRef.current || isScrollingProgrammaticallyRef.current) return;
-    
-    const element = viewerRef.current;
-    const currentScrollPos = element.scrollTop;
-    const scrollHeight = element.scrollHeight;
-    const clientHeight = element.clientHeight;
-    
-    // Update last scroll position
-    lastScrollPositionRef.current = currentScrollPos;
-    
-    if (scrollDirection === 'vertical' && viewMode === 'continuous') {
-      // Clear any existing debounce
-      if (scrollDebounceRef.current) {
-        clearTimeout(scrollDebounceRef.current);
-      }
-      
-      scrollDebounceRef.current = setTimeout(() => {
-        // Calculate how far we've scrolled as a percentage
-        const scrollPercentage = (currentScrollPos + clientHeight) / scrollHeight;
-        
-        // If we're near the bottom, load next pages
-        const threshold = isMobile ? 0.85 : 0.95; // Earlier threshold on mobile
-        if (scrollPercentage > threshold && currentPage < numPages) {
-          goToNextPage();
-        }
-      }, 250);
-    }
+  // Improved scroll handler for continuous mode
+  const handleScroll = useCallback(() => {
+    if (!viewerRef.current || isScrollingProgrammaticallyRef.current || viewMode !== 'continuous') return;
     
     resetControlTimeout();
-  }, [scrollDirection, viewMode, currentPage, numPages, goToNextPage, resetControlTimeout, isMobile]);
+  }, [viewMode, resetControlTimeout]);
   
   // Track reading time
   useEffect(() => {
@@ -680,6 +638,9 @@ const handleTouchEnd = useCallback((e: React.TouchEvent) => {
       if (longPressTimerRef.current) {
         clearTimeout(longPressTimerRef.current);
       }
+      if (scrollObserverRef.current) {
+        scrollObserverRef.current.disconnect();
+      }
     };
   }, [resetControlTimeout]);
   
@@ -698,6 +659,16 @@ const handleTouchEnd = useCallback((e: React.TouchEvent) => {
     window.history.back();
   }, []);
   
+  // Get page reference
+  const setPageRef = useCallback((pageNumber: number) => (element: HTMLDivElement | null) => {
+    if (element) {
+      pageRefs.current.set(pageNumber, element);
+      element.dataset.pageNumber = pageNumber.toString();
+    } else {
+      pageRefs.current.delete(pageNumber);
+    }
+  }, []);
+  
   // Mobile-specific button size
   const buttonSize = isMobile ? "p-3" : "p-2";
   const iconSize = isMobile ? "w-6 h-6" : "w-5 h-5";
@@ -706,11 +677,11 @@ const handleTouchEnd = useCallback((e: React.TouchEvent) => {
     <div 
       ref={containerRef}
       className="fixed inset-0 z-50 bg-black flex flex-col select-none"
-      onClick={handleClick}
+      // onClick={handleClick}
       onMouseMove={resetControlTimeout}
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
+      // onTouchStart={handleTouchStart}
+      // onTouchMove={handleTouchMove}
+      // onTouchEnd={handleTouchEnd}
     >
       {/* Top Bar - Mobile Optimized */}
       <div className={`
