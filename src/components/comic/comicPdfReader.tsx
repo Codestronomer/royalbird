@@ -87,6 +87,8 @@ export default function PdfComicReader({
   const [showThumbnails, setShowThumbnails] = useState<boolean>(false);
   const [showSettings, setShowSettings] = useState<boolean>(false);
   const [bookmarks, setBookmarks] = useState<number[]>([]);
+  const [isScrollingDown, setIsScrollingDown] = useState<boolean>(false);
+  const [lastScrollY, setLastScrollY] = useState<number>(0);
   
   // Loading state
   const [loadedPages, setLoadedPages] = useState<number[]>([]);
@@ -164,7 +166,6 @@ export default function PdfComicReader({
         initialPages.push(i);
       }
       setLoadedPages(initialPages);
-      setIsLoadingChunk(false);
     } else if (viewMode !== 'continuous') {
       setLoadedPages([]);
     }
@@ -172,16 +173,26 @@ export default function PdfComicReader({
   
   // Load more pages when scrolling near the end
   const loadMorePages = useCallback(() => {
-    // 1. Basic guards
-    if (!numPages || isLoadingChunk || viewMode !== 'continuous' || loadedPages.length === 0) return;
+    // 1. Initial Guards: Ensure we have pages to load and aren't already loading
+    if (!numPages || isLoadingChunk || viewMode !== 'continuous') return;
 
-    const lastLoadedPage = Math.max(...loadedPages);
+    // 2. Safe calculation of the last page
+    // Fallback to 0 if loadedPages is empty, so start becomes 1
+    const lastLoadedPage = loadedPages.length > 0 ? Math.max(...loadedPages) : 0;
+    
+    // 3. Exit if we've already reached the end
     if (lastLoadedPage >= numPages) return;
-
-    setIsLoadingChunk(true);
 
     const start = lastLoadedPage + 1;
     const end = Math.min(numPages, start + PAGES_PER_CHUNK - 1);
+
+    // 4. Critical Safety Check: Ensure the loop range is valid and finite
+    if (!Number.isFinite(start) || start > end || start < 1) {
+      console.warn("Invalid page range calculated:", { start, end });
+      return;
+    }
+
+    setIsLoadingChunk(true);
 
     setTimeout(() => {
       const newPages: number[] = [];
@@ -189,10 +200,10 @@ export default function PdfComicReader({
         newPages.push(i);
       }
 
-      // 2. Filter out duplicates using a Set within the functional update
       setLoadedPages(prev => {
-        const uniquePages = new Set([...prev, ...newPages]);
-        return Array.from(uniquePages).sort((a, b) => a - b);
+        const combined = [...prev, ...newPages];
+        // Use a Set to ensure uniqueness and sort to maintain order
+        return Array.from(new Set(combined)).sort((a, b) => a - b);
       });
 
       setIsLoadingChunk(false);
@@ -331,8 +342,23 @@ export default function PdfComicReader({
   const handleScroll = useCallback(() => {
     if (!viewerRef.current || viewMode !== 'continuous') return;
     
-    resetControlTimeout();
+    const currentScrollY = viewerRef.current.scrollTop;
     
+    // Detect scroll direction
+    if (currentScrollY > lastScrollY && currentScrollY > 100) {
+      // Scrolling down - hide controls
+      setIsScrollingDown(true);
+      setShowControls(false);
+    } else if (currentScrollY < lastScrollY) {
+      // Scrolling up - show controls
+      setIsScrollingDown(false);
+      setShowControls(true);
+      resetControlTimeout();
+    }
+    
+    setLastScrollY(currentScrollY);
+    
+    // Load more pages logic
     const element = viewerRef.current;
     const scrollBottom = element.scrollTop + element.clientHeight;
     const scrollHeight = element.scrollHeight;
@@ -340,7 +366,7 @@ export default function PdfComicReader({
     if (scrollHeight - scrollBottom < SCROLL_LOAD_THRESHOLD && !isLoadingChunk) {
       loadMorePages();
     }
-  }, [viewMode, isLoadingChunk, loadMorePages, resetControlTimeout]);
+  }, [viewMode, isLoadingChunk, loadMorePages, lastScrollY, resetControlTimeout]);
   
   // Zoom controls
   const handleZoomIn = useCallback(() => {
@@ -483,7 +509,7 @@ export default function PdfComicReader({
       target.closest('input') || 
       target.closest('select') || 
       target.closest('textarea') ||
-      target.closest('.controls-overlay')
+      target.closest('.control-overlay')
     ) {
       return;
     }
@@ -524,7 +550,9 @@ export default function PdfComicReader({
         return;
       }
 
-      if ((e.metaKey || e.ctrlKey) && (e.key === 'r' || e.key === 'R')) return;
+      if ((e.metaKey || e.ctrlKey) && (e.key === 'r' || e.key === 'R')) {
+        return;
+      }
       
       resetControlTimeout();
       
@@ -642,11 +670,13 @@ export default function PdfComicReader({
       <div className={`
         bg-gradient-to-b from-black/95 via-black/90 to-transparent 
         backdrop-blur-xl border-b border-gray-800/50
-        transition-all duration-300 px-4 py-3
-        ${showControls ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-full pointer-events-none'}
+        transition-all duration-300 px-2 sm:px-4 py-2 sm:py-3
+        controls-overlay
+        ${showControls && !isScrollingDown ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-full pointer-events-none'}
       `}>
-        <div className="flex items-center justify-between max-w-7xl mx-auto">
-          <div className="flex items-center gap-4">
+        <div className="flex items-center justify-between max-w-7xl mx-auto gap-2">
+          {/* Left: Title - Hide on small screens */}
+          <div className="hidden md:flex items-center gap-4">
             <button
               onClick={handleClose}
               className="p-2 hover:bg-gray-800/50 rounded-lg transition text-gray-300 hover:text-white"
@@ -666,42 +696,63 @@ export default function PdfComicReader({
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
+          {/* Mobile close button */}
+          <button
+            onClick={handleClose}
+            className="md:hidden p-2 hover:bg-gray-800/50 rounded-lg transition text-gray-300 hover:text-white"
+            aria-label="Close"
+          >
+            <X className="w-5 h-5" />
+          </button>
+
+          {/* Center: Navigation */}
+          <div className="flex items-center gap-1 sm:gap-4 flex-1 justify-center md:flex-initial">
             <button
               onClick={goToPreviousPage}
               disabled={currentPage <= 1}
-              className="p-2 hover:bg-gray-800/50 rounded-lg transition text-white disabled:opacity-30 disabled:cursor-not-allowed"
+              className="p-1.5 sm:p-2 hover:bg-gray-800/50 rounded-lg transition text-white disabled:opacity-30 disabled:cursor-not-allowed"
               aria-label="Previous page"
             >
-              <ChevronLeft className="w-5 h-5" />
+              <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>
             
-            <div className="flex items-center gap-2 bg-gray-900/50 backdrop-blur rounded-lg px-3 py-1">
+            <div className="flex items-center gap-1 sm:gap-2 bg-gray-900/50 backdrop-blur rounded-lg px-2 sm:px-3 py-1">
               <input
                 type="number"
                 value={currentPage}
-                onChange={(e) => goToPage(parseInt(e.target.value, 10) || 1)}
-                className="w-12 bg-transparent text-white text-center text-sm focus:outline-none"
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (value === '') return;
+                  goToPage(parseInt(value, 10) || 1);
+                }}
+                onBlur={(e) => {
+                  if (e.target.value === '') {
+                    e.target.value = String(currentPage);
+                  }
+                }}
+                className="w-8 sm:w-12 bg-transparent text-white text-center text-xs sm:text-sm focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                 min={1}
                 max={numPages}
               />
-              <span className="text-gray-400 text-sm">/ {numPages}</span>
+              <span className="text-gray-400 text-xs sm:text-sm">/ {numPages}</span>
             </div>
 
             <button
               onClick={goToNextPage}
               disabled={currentPage >= numPages}
-              className="p-2 hover:bg-gray-800/50 rounded-lg transition text-white disabled:opacity-30 disabled:cursor-not-allowed"
+              className="p-1.5 sm:p-2 hover:bg-gray-800/50 rounded-lg transition text-white disabled:opacity-30 disabled:cursor-not-allowed"
               aria-label="Next page"
             >
-              <ChevronRight className="w-5 h-5" />
+              <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>
           </div>
 
-          <div className="flex items-center gap-2">
+          {/* Right: Controls */}
+          <div className="flex items-center gap-1 sm:gap-2">
+            {/* Hide some buttons on mobile */}
             <button
               onClick={toggleBookmark}
-              className={`p-2 hover:bg-gray-800/50 rounded-lg transition ${
+              className={`hidden sm:block p-2 hover:bg-gray-800/50 rounded-lg transition ${
                 bookmarks.includes(currentPage) 
                   ? 'text-yellow-500' 
                   : 'text-gray-300 hover:text-white'
@@ -716,29 +767,29 @@ export default function PdfComicReader({
 
             <button
               onClick={() => setShowThumbnails(!showThumbnails)}
-              className={`p-2 hover:bg-gray-800/50 rounded-lg transition ${
+              className={`p-1.5 sm:p-2 hover:bg-gray-800/50 rounded-lg transition ${
                 showThumbnails ? 'text-blue-500' : 'text-gray-300 hover:text-white'
               }`}
               aria-label="Thumbnails"
             >
-              <Grid className="w-5 h-5" />
+              <Grid className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>
 
             <button
               onClick={() => setShowSettings(!showSettings)}
-              className={`p-2 hover:bg-gray-800/50 rounded-lg transition ${
+              className={`p-1.5 sm:p-2 hover:bg-gray-800/50 rounded-lg transition ${
                 showSettings ? 'text-blue-500' : 'text-gray-300 hover:text-white'
               }`}
               aria-label="Settings"
             >
-              <Settings className="w-5 h-5" />
+              <Settings className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>
 
-            <div className="w-px h-6 bg-gray-700 mx-1" />
+            <div className="hidden sm:block w-px h-6 bg-gray-700 mx-1" />
 
             <button
               onClick={toggleViewMode}
-              className="p-2 hover:bg-gray-800/50 rounded-lg transition text-gray-300 hover:text-white"
+              className="hidden sm:block p-2 hover:bg-gray-800/50 rounded-lg transition text-gray-300 hover:text-white"
               aria-label="View mode"
             >
               {viewMode === 'single' && <BookOpen className="w-5 h-5" />}
@@ -748,7 +799,7 @@ export default function PdfComicReader({
 
             <button
               onClick={() => setScrollDirection(prev => prev === 'vertical' ? 'horizontal' : 'vertical')}
-              className="p-2 hover:bg-gray-800/50 rounded-lg transition text-gray-300 hover:text-white"
+              className="hidden lg:block p-2 hover:bg-gray-800/50 rounded-lg transition text-gray-300 hover:text-white"
               aria-label="Scroll direction"
             >
               {scrollDirection === 'vertical' ? <ArrowDown className="w-5 h-5" /> : <ArrowRight className="w-5 h-5" />}
@@ -842,11 +893,13 @@ export default function PdfComicReader({
               </div>
             )}
             
-            {viewMode === 'continuous' && !isLoadingChunk && loadedPages && loadedPages.length > 0 && loadedPages.length && (loadedPages[loadedPages.length - 1] ?? 0) >= numPages && (
-              <div className="text-center py-12 text-gray-400">
-                <p className="text-lg">End of comic</p>
-                <p className="text-sm mt-2">You&apos;ve reached the last page</p>
-              </div>
+            {viewMode === 'continuous' && 
+            !isLoadingChunk && 
+            (loadedPages[loadedPages.length - 1] ?? 0) >= (numPages ?? 0) && (
+                <div className="text-center py-12 text-gray-400">
+                  <p className="text-lg">End of comic</p>
+                  <p className="text-sm mt-2">You&apos;ve reached the last page</p>
+                </div>
             )}
           </Document>
         </div>
@@ -854,10 +907,10 @@ export default function PdfComicReader({
 
       {/* Thumbnails Panel */}
       {showThumbnails && (
-        <div className="absolute left-0 top-0 bottom-0 w-64 bg-black/95 backdrop-blur-xl border-r border-gray-800/50 overflow-y-auto z-50">
-          <div className="p-4">
+        <div className="absolute left-0 top-0 bottom-0 w-48 sm:w-64 bg-black/95 backdrop-blur-xl border-r border-gray-800/50 overflow-y-auto z-50">
+          <div className="p-3 sm:p-4">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-white font-semibold">Pages</h3>
+              <h3 className="text-white font-semibold text-sm sm:text-base">Pages</h3>
               <button 
                 onClick={() => setShowThumbnails(false)}
                 className="p-1 hover:bg-gray-800/50 rounded transition"
@@ -867,7 +920,7 @@ export default function PdfComicReader({
               </button>
             </div>
             
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-2 sm:gap-3">
               {Array.from({ length: numPages }, (_, i) => i + 1).map((pageNum) => (
                 <button
                   key={pageNum}
@@ -883,11 +936,11 @@ export default function PdfComicReader({
                   aria-label={`Go to page ${pageNum}`}
                 >
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-gray-400 text-sm">{pageNum}</span>
+                    <span className="text-gray-400 text-xs sm:text-sm">{pageNum}</span>
                   </div>
                   {bookmarks.includes(pageNum) && (
                     <div className="absolute top-1 right-1">
-                      <Bookmark className="w-4 h-4 text-yellow-500" fill="currentColor" />
+                      <Bookmark className="w-3 h-3 sm:w-4 sm:h-4 text-yellow-500" fill="currentColor" />
                     </div>
                   )}
                 </button>
@@ -899,7 +952,7 @@ export default function PdfComicReader({
 
       {/* Settings Panel */}
       {showSettings && (
-        <div className="absolute right-0 top-0 bottom-0 w-80 bg-black/95 backdrop-blur-xl border-l border-gray-800/50 overflow-y-auto z-50">
+        <div className="absolute right-0 top-0 bottom-0 w-full sm:w-80 bg-black/95 backdrop-blur-xl border-l border-gray-800/50 overflow-y-auto z-50">
           <div className="p-4">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-white font-semibold">Settings</h3>
@@ -920,13 +973,13 @@ export default function PdfComicReader({
                   <button
                     onClick={handleZoomOut}
                     disabled={scale <= MIN_ZOOM}
-                    className="p-2 bg-gray-800/50 rounded-lg text-gray-300 hover:text-white disabled:opacity-30"
+                    className="p-2 bg-gray-800/50 rounded-lg text-gray-300 hover:text-white disabled:opacity-30 flex-shrink-0"
                     aria-label="Zoom out"
                   >
                     <ZoomOut className="w-5 h-5" />
                   </button>
                   
-                  <div className="flex-1">
+                  <div className="flex-1 min-w-0">
                     <input
                       type="range"
                       min={MIN_ZOOM * 100}
@@ -941,7 +994,7 @@ export default function PdfComicReader({
                   <button
                     onClick={handleZoomIn}
                     disabled={scale >= MAX_ZOOM}
-                    className="p-2 bg-gray-800/50 rounded-lg text-gray-300 hover:text-white disabled:opacity-30"
+                    className="p-2 bg-gray-800/50 rounded-lg text-gray-300 hover:text-white disabled:opacity-30 flex-shrink-0"
                     aria-label="Zoom in"
                   >
                     <ZoomIn className="w-5 h-5" />
@@ -956,6 +1009,44 @@ export default function PdfComicReader({
                     Reset
                   </button>
                 </div>
+              </div>
+
+              {/* Bookmarks - Mobile only */}
+              <div className="sm:hidden">
+                <h4 className="text-gray-300 text-sm font-medium mb-3">Bookmarks</h4>
+                <button
+                  onClick={toggleBookmark}
+                  className={`w-full flex items-center justify-between p-3 rounded-lg border transition-all ${
+                    bookmarks.includes(currentPage)
+                      ? 'bg-yellow-600/20 border-yellow-500 text-white' 
+                      : 'bg-gray-800/30 border-gray-700 text-gray-400 hover:bg-gray-800/50'
+                  }`}
+                >
+                  <span>Bookmark Current Page</span>
+                  <Bookmark 
+                    className="w-4 h-4" 
+                    fill={bookmarks.includes(currentPage) ? 'currentColor' : 'none'} 
+                  />
+                </button>
+                {bookmarks.length > 0 && (
+                  <div className="mt-3 space-y-2">
+                    <p className="text-xs text-gray-400">{bookmarks.length} bookmark{bookmarks.length !== 1 ? 's' : ''}</p>
+                    <div className="flex flex-wrap gap-2">
+                      {bookmarks.map((page) => (
+                        <button
+                          key={page}
+                          onClick={() => {
+                            goToPage(page);
+                            setShowSettings(false);
+                          }}
+                          className="px-3 py-1 bg-yellow-500/20 border border-yellow-500/50 rounded text-xs text-yellow-300 hover:bg-yellow-500/30 transition"
+                        >
+                          Page {page}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* View Mode Settings */}
@@ -1010,7 +1101,8 @@ export default function PdfComicReader({
       <div className={`
         fixed bottom-0 left-0 right-0 z-40
         transition-all duration-300
-        ${showControls ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0 pointer-events-none'}
+        controls-overlay
+        ${showControls && !isScrollingDown ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0 pointer-events-none'}
       `}>
         <div className="h-1 w-full bg-gray-800/50">
           <div 
@@ -1019,23 +1111,23 @@ export default function PdfComicReader({
           />
         </div>
 
-        <div className="bg-black/90 backdrop-blur-xl border-t border-gray-800/50 px-6 py-3">
+        <div className="bg-black/90 backdrop-blur-xl border-t border-gray-800/50 px-3 sm:px-6 py-2 sm:py-3">
           <div className="max-w-7xl mx-auto flex items-center justify-between">
-            <div className="flex items-center gap-6 text-sm text-gray-400">
-              <div className="flex items-center gap-2">
-                <span className="text-white font-medium">{Math.round(readingProgress)}%</span>
-                <span>completed</span>
+            <div className="flex items-center gap-3 sm:gap-6 text-xs sm:text-sm text-gray-400">
+              <div className="flex items-center gap-1 sm:gap-2">
+                <span className="text-white font-medium text-sm sm:text-base">{Math.round(readingProgress)}%</span>
+                <span className="inline">completed</span>
               </div>
             </div>
 
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 sm:gap-4">
                {bookmarks.length > 0 && (
                  <div className="flex items-center -space-x-1">
                    {bookmarks.slice(-3).map((page) => (
                      <button
                         key={page}
                         onClick={() => goToPage(page)}
-                        className="w-6 h-6 rounded-full bg-yellow-500 border-2 border-black flex items-center justify-center text-[10px] text-black font-bold hover:scale-110 transition"
+                        className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-yellow-500 border-2 border-black flex items-center justify-center text-[9px] sm:text-[10px] text-black font-bold hover:scale-110 transition"
                         title={`Bookmark at page ${page}`}
                      >
                        {page}
