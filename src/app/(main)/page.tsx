@@ -11,25 +11,25 @@ export default function Home() {
   const featuredComics = [
     {
       id: 1,
+      title: "Swapped",
+      description: "Two friends wake up in each other\'s bodies—confused, panicked, and realizing someone wanted this to happen. Now they must survive each other\'s lives while uncovering who switched them… and why.",
+      image: "https://velgg90lgs.ufs.sh/f/ymmBhW7qEDZCpOpQBDaFjWu0eatESN5X6Am9bofsQqiVhzHC",
+      rating: 'New!'
+    },
+    {
+      id: 2,
       title: "Breach",
       description: "In a futuristic Nigeria, a young woman named Onari, scarred by a tragic past, teams up with a fellow thief, Yubanna, to challenge the oppressive Regime. They plan a daring mission to the High Rise City in Abuja, but a ruthless general is already on their trail.",
       image: "https://velgg90lgs.ufs.sh/f/ymmBhW7qEDZClft5PAGpduc014aCIU9Zn5WhQOGosiJETqfK",
       rating: 4.8
     },
     {
-      id: 2,
+      id: 3,
       title: "Breach (Issue #2)",
       description: "Onari's journey continues into the Forsaken. still reluctant to join the fight, it is obvious something must be done to save the people.",
       image: "https://velgg90lgs.ufs.sh/f/ymmBhW7qEDZCwVnJbzHX8cBAhqQlatjysEH4IeYN5Vodrvxb",
       rating: 4.9
     },
-    {
-      id: 3,
-      title: "Swapped",
-      description: "Two friends wake up in each other\'s bodies—confused, panicked, and realizing someone wanted this to happen. Now they must survive each other\'s lives while uncovering who switched them… and why.",
-      image: "https://velgg90lgs.ufs.sh/f/ymmBhW7qEDZCpOpQBDaFjWu0eatESN5X6Am9bofsQqiVhzHC",
-      rating: 'New!'
-    }
   ];
 
   const features = [
