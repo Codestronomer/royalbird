@@ -79,7 +79,7 @@ export default function PdfComicReader({
   const [scale, setScale] = useState<number>(1.0);
   const [rotation, setRotation] = useState<number>(0);
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
-  const [viewMode, setViewMode] = useState<ViewMode>('single');
+  const [viewMode, setViewMode] = useState<ViewMode>('continuous');
   const [scrollDirection, setScrollDirection] = useState<ScrollDirection>('vertical');
   
   // UI state
