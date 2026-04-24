@@ -15,7 +15,7 @@ import { transformComic } from '~/lib/utils'
 import toast from 'react-hot-toast';
 
 const sortOptions = [
-  { label: 'Newest First', value: '-publishedAt' },
+  { label: 'Newest First', value: '-createdAt' },
   { label: 'Most Popular', value: '-views' },
   { label: 'Highest Rated', value: '-averageRating' },
   { label: 'A to Z', value: 'title' }
@@ -29,7 +29,7 @@ export default function ComicsPage() {
   const [genres, setGenres] = useState<ApiGenre[]>([])
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedGenre, setSelectedGenre] = useState('')
-  const [sortBy, setSortBy] = useState('-publishedAt')
+  const [sortBy, setSortBy] = useState('-createdAt')
   const [page, setPage] = useState(1)
   const [hasMore, setHasMore] = useState(true)
   const [loading, setLoading] = useState(true)
