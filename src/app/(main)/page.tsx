@@ -28,7 +28,7 @@ export default function Home() {
       title: "Swapped",
       description: "Two friends wake up in each other\'s bodies—confused, panicked, and realizing someone wanted this to happen. Now they must survive each other\'s lives while uncovering who switched them… and why.",
       image: "https://velgg90lgs.ufs.sh/f/ymmBhW7qEDZCpOpQBDaFjWu0eatESN5X6Am9bofsQqiVhzHC",
-      rating: 'Coming soon'
+      rating: 'New!'
     }
   ];
 
